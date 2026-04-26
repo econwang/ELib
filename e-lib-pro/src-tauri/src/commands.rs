@@ -34,12 +34,24 @@ pub fn import_bibtex(db_name: String, bibtex_content: String) -> Result<String, 
 
     for entry in bibliography.iter() {
         let title = match entry.title() {
-            Ok(Some(t)) => t.to_string(),
+            Ok(Some(chunks)) => {
+                let mut s = String::new();
+                for chunk in chunks {
+                    s.push_str(&chunk.v.to_string());
+                }
+                s
+            },
             _ => String::new(),
         };
         
         let author = match entry.author() {
-            Ok(Some(a)) => a.to_string(),
+            Ok(Some(persons)) => {
+                let mut names = Vec::new();
+                for person in persons {
+                    names.push(person.name);
+                }
+                names.join(", ")
+            },
             _ => String::new(),
         };
         
