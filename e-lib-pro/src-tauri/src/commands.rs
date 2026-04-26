@@ -3,6 +3,7 @@ use tauri::command;
 use image::ImageOutputFormat;
 use std::io::Cursor;
 use rusqlite::params;
+use biblatex::ChunksExt;
 
 #[command]
 pub fn add_book(db_name: String, category_id: i32, title: String, author: String, publisher: String, isbn: String, edition: String, local_path: String, cover_bytes: Vec<u8>) -> Result<String, String> {
