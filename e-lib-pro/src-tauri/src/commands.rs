@@ -35,13 +35,9 @@ pub fn import_bibtex(db_name: String, bibtex_content: String) -> Result<String, 
     for entry in bibliography.iter() {
         let title = match entry.title() {
             Ok(chunks) => {
-                let mut s = String::new();
-                for chunk in chunks {
-                    // biblatex::Chunk may be Normal(String) or Macro etc. 
-                    // However, biblatex provides format_verbatim() to convert chunks to string safely.
-                    s.push_str(&chunk.v.format_verbatim());
-                }
-                s
+                // In biblatex 0.9, format_verbatim is implemented on the array slice
+                // [Spanned<Chunk>] directly, not on the Chunk itself.
+                chunks.format_verbatim()
             },
             _ => String::new(),
         };
