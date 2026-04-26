@@ -171,7 +171,7 @@ import TreeView from './components/TreeView.vue';
 import BookTable from './components/BookTable.vue';
 import BookDetail from './components/BookDetail.vue';
 import { invoke } from '@tauri-apps/api/core';
-import { Splitpanes, Pane } from 'splitpanes/dist/splitpanes.es.js';
+import { Splitpanes, Pane } from 'splitpanes';
 import 'splitpanes/dist/splitpanes.css';
 
 const store = useLibraryStore();
