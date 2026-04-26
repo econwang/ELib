@@ -35,11 +35,7 @@ pub fn import_bibtex(db_name: String, bibtex_content: String) -> Result<String, 
 
     for entry in bibliography.iter() {
         let title = match entry.title() {
-            Ok(chunks) => {
-                // In biblatex 0.9, format_verbatim is implemented on the array slice
-                // [Spanned<Chunk>] directly, not on the Chunk itself.
-                chunks.format_verbatim()
-            },
+            Ok(chunks) => chunks.format_verbatim(),
             _ => String::new(),
         };
         
