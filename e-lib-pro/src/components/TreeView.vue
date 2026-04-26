@@ -13,6 +13,7 @@
 <script setup lang="ts">
 defineProps<{ nodes: any[] }>();
 const onContextMenu = (node: any) => {
+  console.log('Context menu for node:', node);
   // Context menu logic
 };
 </script>
