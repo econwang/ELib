@@ -34,7 +34,7 @@ pub fn import_bibtex(db_name: String, bibtex_content: String) -> Result<String, 
 
     for entry in bibliography.iter() {
         let title = match entry.title() {
-            Ok(Some(chunks)) => {
+            Ok(chunks) => {
                 let mut s = String::new();
                 for chunk in chunks {
                     s.push_str(&chunk.v.to_string());
@@ -45,7 +45,7 @@ pub fn import_bibtex(db_name: String, bibtex_content: String) -> Result<String, 
         };
         
         let author = match entry.author() {
-            Ok(Some(persons)) => {
+            Ok(persons) => {
                 let mut names = Vec::new();
                 for person in persons {
                     names.push(person.name);
