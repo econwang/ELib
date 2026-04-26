@@ -83,8 +83,10 @@ pub fn get_books(db_name: String, category_id: Option<i32>) -> Result<Vec<Book>,
     
     let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
     
-    let rows = if let Some(cid) = category_id {
-        stmt.query_map([cid], |row| {
+    let mut result = Vec::new();
+    
+    if let Some(cid) = category_id {
+        let rows = stmt.query_map([cid], |row| {
             Ok(Book {
                 id: row.get(0)?,
                 category_id: row.get(1)?,
@@ -96,9 +98,12 @@ pub fn get_books(db_name: String, category_id: Option<i32>) -> Result<Vec<Book>,
                 local_path: row.get(7).unwrap_or_default(),
                 notes: row.get(8).unwrap_or_default(),
             })
-        }).map_err(|e| e.to_string())?
+        }).map_err(|e| e.to_string())?;
+        for r in rows {
+            result.push(r.map_err(|e| e.to_string())?);
+        }
     } else {
-        stmt.query_map([], |row| {
+        let rows = stmt.query_map([], |row| {
             Ok(Book {
                 id: row.get(0)?,
                 category_id: row.get(1)?,
@@ -110,13 +115,12 @@ pub fn get_books(db_name: String, category_id: Option<i32>) -> Result<Vec<Book>,
                 local_path: row.get(7).unwrap_or_default(),
                 notes: row.get(8).unwrap_or_default(),
             })
-        }).map_err(|e| e.to_string())?
+        }).map_err(|e| e.to_string())?;
+        for r in rows {
+            result.push(r.map_err(|e| e.to_string())?);
+        }
     };
     
-    let mut result = Vec::new();
-    for r in rows {
-        result.push(r.map_err(|e| e.to_string())?);
-    }
     Ok(result)
 }
 
