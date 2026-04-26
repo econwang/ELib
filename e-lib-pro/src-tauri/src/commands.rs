@@ -26,13 +26,23 @@ pub fn add_book(db_name: String, category_id: i32, title: String, author: String
 
 #[command]
 pub fn import_bibtex(db_name: String, bibtex_content: String) -> Result<String, String> {
-    let bibliography = biblatex::Bibliography::parse(&bibtex_content).map_err(|e| e.to_string())?;
+    let bibliography = biblatex::Bibliography::parse(&bibtex_content)
+        .map_err(|e| format!("{:?}", e))?;
+    
     let pool = DB_POOL.lock().unwrap();
     let conn = pool.get(&db_name).ok_or("Database not found")?;
 
     for entry in bibliography.iter() {
-        let title = entry.title().unwrap_or_default();
-        let author = entry.author().unwrap_or_default().to_string();
+        let title = match entry.title() {
+            Ok(Some(t)) => t.to_string(),
+            _ => String::new(),
+        };
+        
+        let author = match entry.author() {
+            Ok(Some(a)) => a.to_string(),
+            _ => String::new(),
+        };
+        
         conn.execute("INSERT INTO books (title, author) VALUES (?1, ?2)", params![title, author]).map_err(|e| e.to_string())?;
     }
     Ok("BibTeX imported successfully".to_string())
