@@ -1,19 +1,17 @@
 <template>
   <ul class="pl-4">
     <li v-for="node in nodes" :key="node.id" class="my-1">
-      <div class="flex items-center space-x-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-800 p-1 rounded" @contextmenu.prevent="onContextMenu(node)">
-        <span v-if="node.children" class="text-xs">▶</span>
-        <span>{{ node.name }}</span>
+      <div class="flex items-center space-x-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 p-1 rounded" @click="$emit('select', node)">
+        <span v-if="node.children && node.children.length" class="text-xs text-gray-500">▶</span>
+        <span v-else class="text-xs text-transparent">▶</span>
+        <span>📁 {{ node.name }}</span>
       </div>
-      <TreeView v-if="node.children" :nodes="node.children" />
+      <TreeView v-if="node.children && node.children.length" :nodes="node.children" @select="$emit('select', $event)" />
     </li>
   </ul>
 </template>
 
 <script setup lang="ts">
 defineProps<{ nodes: any[] }>();
-const onContextMenu = (node: any) => {
-  console.log('Context menu for node:', node);
-  // Context menu logic
-};
+defineEmits(['select']);
 </script>

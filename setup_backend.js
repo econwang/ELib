@@ -1,3 +1,27 @@
+const fs = require('fs');
+
+const dbRs = `
+use rusqlite::{Connection, Result};
+use std::collections::HashMap;
+use std::sync::Mutex;
+use lazy_static::lazy_static;
+
+lazy_static! {
+    pub static ref DB_POOL: Mutex<HashMap<String, Connection>> = Mutex::new(HashMap::new());
+}
+
+pub fn init_db(db_name: &str, path: &str) -> Result<()> {
+    let conn = Connection::open(path)?;
+    conn.execute("CREATE TABLE IF NOT EXISTS categories (id INTEGER PRIMARY KEY AUTOINCREMENT, parent_id INTEGER, name TEXT NOT NULL, level INTEGER NOT NULL)", [])?;
+    conn.execute("CREATE TABLE IF NOT EXISTS books (id INTEGER PRIMARY KEY AUTOINCREMENT, category_id INTEGER, title TEXT NOT NULL, author TEXT, publisher TEXT, isbn TEXT, edition TEXT, local_path TEXT, cover_image BLOB, notes TEXT, FOREIGN KEY(category_id) REFERENCES categories(id))", [])?;
+    
+    let mut pool = DB_POOL.lock().unwrap();
+    pool.insert(db_name.to_string(), conn);
+    Ok(())
+}
+`;
+
+const commandsRs = `
 use crate::db::{init_db, DB_POOL};
 use tauri::command;
 use image::ImageOutputFormat;
@@ -224,3 +248,34 @@ pub fn save_config(config: String) -> Result<String, String> {
     fs::write("config.json", config).map_err(|e| e.to_string())?;
     Ok("Config saved".to_string())
 }
+`;
+
+const mainRs = `
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+mod db;
+mod commands;
+
+fn main() {
+    tauri::Builder::default()
+        .invoke_handler(tauri::generate_handler![
+            commands::create_db,
+            commands::open_db,
+            commands::get_categories,
+            commands::add_category,
+            commands::get_books,
+            commands::get_book_cover,
+            commands::add_book,
+            commands::update_book,
+            commands::delete_book,
+            commands::import_bibtex,
+            commands::read_config,
+            commands::save_config
+        ])
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
+}
+`;
+
+fs.writeFileSync('/workspace/e-lib-pro/src-tauri/src/db.rs', dbRs.trim());
+fs.writeFileSync('/workspace/e-lib-pro/src-tauri/src/commands.rs', commandsRs.trim());
+fs.writeFileSync('/workspace/e-lib-pro/src-tauri/src/main.rs', mainRs.trim());
