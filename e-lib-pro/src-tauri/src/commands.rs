@@ -37,7 +37,9 @@ pub fn import_bibtex(db_name: String, bibtex_content: String) -> Result<String, 
             Ok(chunks) => {
                 let mut s = String::new();
                 for chunk in chunks {
-                    s.push_str(&chunk.v.to_string());
+                    // biblatex::Chunk may be Normal(String) or Macro etc. 
+                    // However, biblatex provides format_verbatim() to convert chunks to string safely.
+                    s.push_str(&chunk.v.format_verbatim());
                 }
                 s
             },
