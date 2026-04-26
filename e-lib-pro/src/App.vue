@@ -26,35 +26,48 @@
     </header>
 
     <!-- Main Content Splitpanes -->
-    <div class="flex-1 overflow-hidden" @click="closeContextMenu">
-      <splitpanes class="default-theme">
-        <pane size="25" min-size="15" class="bg-gray-100 dark:bg-gray-800 overflow-y-auto">
-          <div class="p-2 h-full" @contextmenu.prevent="onPaneContextMenu">
-            <div v-for="db in store.databases" :key="db" class="mb-4">
-              <div class="font-bold cursor-pointer hover:text-[var(--color-primary)] p-1 rounded transition-colors" :class="{'bg-gray-200 dark:bg-gray-700': store.currentDb === db}" @click="selectDb(db)" @contextmenu.stop.prevent="onDbContextMenu($event, db)">
-                🗄️ {{ db }}
-              </div>
-              <TreeView v-if="store.currentDb === db" :nodes="buildTree(store.categories)" @select="onCategorySelect" @contextmenu="onCategoryContextMenu" />
+    
+    <!-- Main Content Resizable Panes -->
+    <div class="flex-1 flex overflow-hidden" @click="closeContextMenu" @mousemove="onDrag" @mouseup="stopDrag" @mouseleave="stopDrag">
+      
+      <!-- Left Pane (TreeView) -->
+      <div :style="{ width: leftPaneWidth + 'px' }" class="bg-gray-100 dark:bg-gray-800 overflow-y-auto shrink-0">
+        <div class="p-2 h-full" @contextmenu.prevent="onPaneContextMenu">
+          <div v-for="db in store.databases" :key="db" class="mb-4">
+            <div class="font-bold cursor-pointer hover:text-[var(--color-primary)] p-1 rounded transition-colors" :class="{'bg-gray-200 dark:bg-gray-700': store.currentDb === db}" @click="selectDb(db)" @contextmenu.stop.prevent="onDbContextMenu($event, db)">
+              🗄️ {{ db }}
             </div>
-            
-            <div v-if="store.databases.length === 0" class="text-gray-500 text-sm p-4 text-center mt-10">
-              No databases found.<br/>Right-click to create one.
-            </div>
+            <TreeView v-if="store.currentDb === db" :nodes="buildTree(store.categories)" @select="onCategorySelect" @contextmenu="onCategoryContextMenu" />
           </div>
-        </pane>
+          
+          <div v-if="store.databases.length === 0" class="text-gray-500 text-sm p-4 text-center mt-10">
+            No databases found.<br/>Right-click to create one.
+          </div>
+        </div>
+      </div>
+      
+      <!-- Vertical Resizer -->
+      <div class="w-1 cursor-col-resize hover:bg-[var(--color-primary)] bg-gray-300 dark:bg-gray-700 z-10 transition-colors" @mousedown="startDrag('vertical')"></div>
+
+      <!-- Right Pane (Table + Details) -->
+      <div class="flex-1 flex flex-col min-w-0">
         
-        <pane size="75" min-size="30">
-          <splitpanes horizontal>
-            <pane size="70" min-size="20" class="bg-white dark:bg-gray-900">
-              <BookTable :books="store.books" @select="store.selectBook" />
-            </pane>
-            <pane size="30" min-size="10" class="bg-gray-50 dark:bg-gray-800 overflow-y-auto">
-              <BookDetail :book="store.selectedBook" :cover="store.bookCover" />
-            </pane>
-          </splitpanes>
-        </pane>
-      </splitpanes>
+        <!-- Top Right Pane (Table) -->
+        <div :style="{ height: topPaneHeight + 'px' }" class="bg-white dark:bg-gray-900 overflow-auto shrink-0">
+          <BookTable :books="store.books" @select="store.selectBook" />
+        </div>
+        
+        <!-- Horizontal Resizer -->
+        <div class="h-1 cursor-row-resize hover:bg-[var(--color-primary)] bg-gray-300 dark:bg-gray-700 z-10 transition-colors" @mousedown="startDrag('horizontal')"></div>
+
+        <!-- Bottom Right Pane (Details) -->
+        <div class="flex-1 bg-gray-50 dark:bg-gray-800 overflow-y-auto p-4 min-h-0">
+          <BookDetail :book="store.selectedBook" :cover="store.bookCover" />
+        </div>
+        
+      </div>
     </div>
+  
 
     <!-- Context Menu -->
     <div v-if="contextMenu.show" :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }" class="fixed bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-lg py-1 z-[100] w-48 text-sm">
@@ -171,10 +184,35 @@ import TreeView from './components/TreeView.vue';
 import BookTable from './components/BookTable.vue';
 import BookDetail from './components/BookDetail.vue';
 import { invoke } from '@tauri-apps/api/core';
-import { Splitpanes, Pane } from 'splitpanes';
-import 'splitpanes/dist/splitpanes.css';
 
 const store = useLibraryStore();
+
+// Custom Resizer Logic
+const leftPaneWidth = ref(300);
+const topPaneHeight = ref(400);
+const dragging = ref<'vertical' | 'horizontal' | null>(null);
+
+const startDrag = (type: 'vertical' | 'horizontal') => {
+  dragging.value = type;
+  document.body.style.userSelect = 'none'; // Prevent text selection while dragging
+};
+
+const onDrag = (e: MouseEvent) => {
+  if (dragging.value === 'vertical') {
+    leftPaneWidth.value = Math.max(150, Math.min(e.clientX, window.innerWidth - 300));
+  } else if (dragging.value === 'horizontal') {
+    // 32 is the height of the header
+    topPaneHeight.value = Math.max(100, Math.min(e.clientY - 32, window.innerHeight - 150));
+  }
+};
+
+const stopDrag = () => {
+  if (dragging.value) {
+    dragging.value = null;
+    document.body.style.userSelect = '';
+  }
+};
+
 
 const showCreateDb = ref(false);
 const showOpenDb = ref(false);
@@ -401,40 +439,3 @@ const buildTree = (categories: any[]) => {
 };
 </script>
 
-<style>
-/* Splitpanes Theme Customization */
-.splitpanes__pane {
-  display: flex;
-  flex-direction: column;
-}
-.splitpanes__splitter {
-  background-color: var(--color-border, #e5e7eb);
-  position: relative;
-}
-.dark .splitpanes__splitter {
-  background-color: var(--color-border-dark, #374151);
-}
-.splitpanes__splitter:before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  transition: opacity 0.4s;
-  background-color: var(--color-primary, #3b82f6);
-  opacity: 0;
-  z-index: 1;
-}
-.splitpanes__splitter:hover:before {
-  opacity: 1;
-}
-.splitpanes--vertical > .splitpanes__splitter:before {
-  left: -2px;
-  right: -2px;
-  height: 100%;
-}
-.splitpanes--horizontal > .splitpanes__splitter:before {
-  top: -2px;
-  bottom: -2px;
-  width: 100%;
-}
-</style>
