@@ -1,3 +1,6 @@
+const fs = require('fs');
+
+const bookTableVue = `
 <template>
   <div class="h-full w-full overflow-auto">
     <table class="w-full text-left border-collapse whitespace-nowrap" :style="{ width: table.getTotalSize() + 'px' }">
@@ -29,9 +32,13 @@
 </template>
 
 <script setup lang="ts">
-// removed unused import
-import { useVueTable, getCoreRowModel, FlexRender } from '@tanstack/vue-table';
-import type { ColumnDef } from '@tanstack/vue-table';
+import { ref, computed } from 'vue';
+import {
+  useVueTable,
+  getCoreRowModel,
+  FlexRender,
+  ColumnDef,
+} from '@tanstack/vue-table';
 
 const props = defineProps<{ books: any[] }>();
 defineEmits(['select']);
@@ -51,3 +58,6 @@ const table = useVueTable({
   columnResizeMode: 'onChange',
 });
 </script>
+`;
+
+fs.writeFileSync('/workspace/e-lib-pro/src/components/BookTable.vue', bookTableVue.trim());
