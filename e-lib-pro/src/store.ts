@@ -10,10 +10,17 @@ export const useLibraryStore = defineStore('library', () => {
   const selectedBook = ref<any>(null)
   const bookCover = ref<string | null>(null)
   
-  const loadDatabases = () => {
+  const loadDatabases = async () => {
     const saved = localStorage.getItem('elib_dbs')
     if (saved) {
       databases.value = JSON.parse(saved)
+      if (databases.value.length > 0) {
+        // Automatically open the first database
+        await openDatabase(databases.value[0], databases.value[0] + '.db')
+      }
+    } else {
+      // If no database exists, auto-create a default one for the user
+      await createDatabase('Default Library', 'default.db')
     }
   }
 

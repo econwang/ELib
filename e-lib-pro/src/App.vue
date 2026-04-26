@@ -29,12 +29,16 @@
     <div class="flex-1 overflow-hidden" @click="closeContextMenu">
       <splitpanes class="default-theme">
         <pane size="25" min-size="15" class="bg-gray-100 dark:bg-gray-800 overflow-y-auto">
-          <div class="p-2 h-full">
+          <div class="p-2 h-full" @contextmenu.prevent="onPaneContextMenu">
             <div v-for="db in store.databases" :key="db" class="mb-4">
-              <div class="font-bold cursor-pointer hover:text-[var(--color-primary)]" @click="selectDb(db)" @contextmenu.prevent="onDbContextMenu($event, db)">
+              <div class="font-bold cursor-pointer hover:text-[var(--color-primary)] p-1 rounded transition-colors" :class="{'bg-gray-200 dark:bg-gray-700': store.currentDb === db}" @click="selectDb(db)" @contextmenu.stop.prevent="onDbContextMenu($event, db)">
                 🗄️ {{ db }}
               </div>
               <TreeView v-if="store.currentDb === db" :nodes="buildTree(store.categories)" @select="onCategorySelect" @contextmenu="onCategoryContextMenu" />
+            </div>
+            
+            <div v-if="store.databases.length === 0" class="text-gray-500 text-sm p-4 text-center mt-10">
+              No databases found.<br/>Right-click to create one.
             </div>
           </div>
         </pane>
@@ -54,8 +58,11 @@
 
     <!-- Context Menu -->
     <div v-if="contextMenu.show" :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }" class="fixed bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-lg py-1 z-[100] w-48 text-sm">
-      <div class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="handleContextMenu('addBook')">Add Book to Category</div>
-      <div class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="handleContextMenu('addCategory')">Add Sub-category</div>
+      <div v-if="contextMenu.type === 'pane'" class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="handleContextMenu('createDb')">Create Database</div>
+      <div v-if="contextMenu.type === 'pane'" class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="handleContextMenu('openDb')">Open Database</div>
+      
+      <div v-if="contextMenu.type !== 'pane'" class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="handleContextMenu('addBook')">Add Book to {{ contextMenu.type === 'db' ? 'Root' : 'Category' }}</div>
+      <div v-if="contextMenu.type !== 'pane'" class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="handleContextMenu('addCategory')">Add {{ contextMenu.type === 'db' ? 'Category' : 'Sub-category' }}</div>
     </div>
 
     <!-- Modals -->
@@ -184,6 +191,7 @@ const contextMenu = ref({
   show: false,
   x: 0,
   y: 0,
+  type: 'db', // 'db', 'category', 'pane'
   nodeId: null as number | null,
   nodeName: ''
 });
@@ -235,6 +243,18 @@ const closeContextMenu = () => {
   contextMenu.value.show = false;
 };
 
+const onPaneContextMenu = (event: MouseEvent) => {
+  event.preventDefault();
+  contextMenu.value = {
+    show: true,
+    x: event.clientX,
+    y: event.clientY,
+    type: 'pane',
+    nodeId: null,
+    nodeName: 'Pane'
+  };
+};
+
 const onDbContextMenu = (event: MouseEvent, db: string) => {
   event.preventDefault();
   store.currentDb = db;
@@ -243,6 +263,7 @@ const onDbContextMenu = (event: MouseEvent, db: string) => {
     show: true,
     x: event.clientX,
     y: event.clientY,
+    type: 'db',
     nodeId: null,
     nodeName: db
   };
@@ -254,6 +275,7 @@ const onCategoryContextMenu = ({ event, node }: any) => {
     show: true,
     x: event.clientX,
     y: event.clientY,
+    type: 'category',
     nodeId: node.id,
     nodeName: node.name
   };
@@ -265,6 +287,10 @@ const handleContextMenu = (action: string) => {
     showAddCategory.value = true;
   } else if (action === 'addBook') {
     openAddBookModal();
+  } else if (action === 'createDb') {
+    showCreateDb.value = true;
+  } else if (action === 'openDb') {
+    showOpenDb.value = true;
   }
   closeContextMenu();
 };
