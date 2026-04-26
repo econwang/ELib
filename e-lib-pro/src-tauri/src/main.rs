@@ -15,6 +15,7 @@ fn main() {
             commands::update_book,
             commands::delete_book,
             commands::import_bibtex,
+            commands::export_bibtex,
             commands::read_config,
             commands::save_config
         ])

@@ -214,6 +214,30 @@ pub fn import_bibtex(db_name: String, category_id: Option<i32>, bibtex_content: 
 }
 
 #[command]
+pub fn export_bibtex(db_name: String, category_id: Option<i32>) -> Result<String, String> {
+    let books = get_books(db_name, category_id)?;
+    let mut bib = String::new();
+    for book in books {
+        bib.push_str(&format!("@book{{book{},\n", book.id));
+        bib.push_str(&format!("  title = {{{}}},\n", book.title));
+        if !book.author.is_empty() {
+            bib.push_str(&format!("  author = {{{}}},\n", book.author));
+        }
+        if !book.publisher.is_empty() {
+            bib.push_str(&format!("  publisher = {{{}}},\n", book.publisher));
+        }
+        if !book.isbn.is_empty() {
+            bib.push_str(&format!("  isbn = {{{}}},\n", book.isbn));
+        }
+        if !book.edition.is_empty() {
+            bib.push_str(&format!("  edition = {{{}}},\n", book.edition));
+        }
+        bib.push_str("}\n\n");
+    }
+    Ok(bib)
+}
+
+#[command]
 pub fn read_config() -> Result<String, String> {
     let config_path = Path::new("config.json");
     if config_path.exists() {

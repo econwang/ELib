@@ -1,3 +1,6 @@
+const fs = require('fs');
+
+const appVue = `
 <template>
   <div class="h-screen w-screen flex flex-col bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-200" :style="customStyle">
     <!-- Menu Bar -->
@@ -412,3 +415,6 @@ const buildTree = (categories: any[]) => {
   width: 100%;
 }
 </style>
+`;
+
+fs.writeFileSync('/workspace/e-lib-pro/src/App.vue', appVue.trim());
