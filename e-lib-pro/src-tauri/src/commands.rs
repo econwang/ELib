@@ -3,7 +3,6 @@ use tauri::command;
 use image::ImageOutputFormat;
 use std::io::Cursor;
 use rusqlite::params;
-use biblatex::ChunksExt;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;

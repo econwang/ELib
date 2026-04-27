@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full w-full overflow-auto flex flex-col bg-white dark:bg-gray-900" ref="containerRef" @contextmenu.prevent="$emit('contextmenu-empty', $event)">
+  <div class="h-full w-full overflow-auto flex flex-col bg-white dark:bg-gray-900" ref="containerRef" @click="$emit('select', null)" @contextmenu.prevent="$emit('contextmenu-empty', $event)">
     <table class="w-full text-left border-collapse whitespace-nowrap table-fixed">
       <thead class="bg-gray-100 dark:bg-gray-800 sticky top-0 shadow-sm z-10">
         <tr v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
