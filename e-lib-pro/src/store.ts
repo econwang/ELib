@@ -67,6 +67,28 @@ export const useLibraryStore = defineStore('library', () => {
     }
   }
 
+  const getCategoryLevel = (parentId: number | null): number => {
+    if (!parentId) return 1;
+    const parent = categories.value.find(c => c.id === parentId);
+    if (!parent) return 1;
+    return (parent.level || 1) + 1;
+  }
+
+  const addCategory = async (parentId: number | null, name: string) => {
+    if (!currentDb.value) return
+    const level = getCategoryLevel(parentId);
+    if (level > 5) {
+      alert('Maximum category depth (5 levels) reached.');
+      return;
+    }
+    try {
+      await invoke('add_category', { dbName: currentDb.value, parentId, name, level })
+      await fetchCategories()
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   const fetchBooks = async (categoryId: number | null) => {
     if (!currentDb.value) return
     try {
@@ -86,16 +108,6 @@ export const useLibraryStore = defineStore('library', () => {
       }
     } else {
       bookCover.value = null
-    }
-  }
-
-  const addCategory = async (parentId: number | null, name: string) => {
-    if (!currentDb.value) return
-    try {
-      await invoke('add_category', { dbName: currentDb.value, parentId, name, level: 0 })
-      await fetchCategories()
-    } catch (e) {
-      console.error(e)
     }
   }
 

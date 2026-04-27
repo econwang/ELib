@@ -5,8 +5,8 @@
       <div class="relative group">
         <div class="cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-700 px-2 py-1 rounded">File</div>
         <div class="absolute hidden group-hover:block top-full left-0 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-lg py-1 z-50 w-48">
-          <div class="px-4 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="showCreateDb = true">Create New Database</div>
-          <div class="px-4 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="showOpenDb = true">Open Existing Database</div>
+          <div class="px-4 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="dbName=''; dbPath=''; showCreateDb=true">Create New Database</div>
+          <div class="px-4 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="dbName=''; dbPath=''; showOpenDb=true">Open Existing Database</div>
           <div class="px-4 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="exportBibtex">Export BibTeX</div>
         </div>
       </div>
@@ -107,11 +107,14 @@
     <div v-if="showCreateDb" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-96">
         <h2 class="text-xl mb-4">Create Database</h2>
-        <input v-model="dbName" placeholder="Database Name" class="w-full mb-2 p-2 border rounded dark:bg-gray-700 dark:border-gray-600" />
-        <input v-model="dbPath" placeholder="Path (e.g., C:/data.db)" class="w-full mb-4 p-2 border rounded dark:bg-gray-700 dark:border-gray-600" />
+        <input v-model="dbName" placeholder="Database Name (e.g., Science)" class="w-full mb-2 p-2 border rounded dark:bg-gray-700 dark:border-gray-600" />
+        <div class="flex items-center space-x-2 mb-4">
+          <input v-model="dbPath" placeholder="Select save location..." readonly class="flex-1 p-2 border rounded dark:bg-gray-700 dark:border-gray-600 bg-gray-100 dark:bg-gray-900 cursor-not-allowed" />
+          <button @click="selectSavePath" class="px-3 py-2 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600">Browse</button>
+        </div>
         <div class="flex justify-end space-x-2">
           <button @click="showCreateDb = false" class="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700">Cancel</button>
-          <button @click="doCreateDb" class="px-4 py-2 rounded bg-blue-500 text-white">Create</button>
+          <button @click="doCreateDb" class="px-4 py-2 rounded bg-blue-500 text-white" :disabled="!dbName || !dbPath">Create</button>
         </div>
       </div>
     </div>
@@ -119,11 +122,14 @@
     <div v-if="showOpenDb" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-96">
         <h2 class="text-xl mb-4">Open Database</h2>
-        <input v-model="dbName" placeholder="Database Name" class="w-full mb-2 p-2 border rounded dark:bg-gray-700 dark:border-gray-600" />
-        <input v-model="dbPath" placeholder="Path (e.g., C:/data.db)" class="w-full mb-4 p-2 border rounded dark:bg-gray-700 dark:border-gray-600" />
+        <input v-model="dbName" placeholder="Display Name (e.g., My Library)" class="w-full mb-2 p-2 border rounded dark:bg-gray-700 dark:border-gray-600" />
+        <div class="flex items-center space-x-2 mb-4">
+          <input v-model="dbPath" placeholder="Select .db file..." readonly class="flex-1 p-2 border rounded dark:bg-gray-700 dark:border-gray-600 bg-gray-100 dark:bg-gray-900 cursor-not-allowed" />
+          <button @click="selectOpenPath" class="px-3 py-2 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600">Browse</button>
+        </div>
         <div class="flex justify-end space-x-2">
           <button @click="showOpenDb = false" class="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700">Cancel</button>
-          <button @click="doOpenDb" class="px-4 py-2 rounded bg-blue-500 text-white">Open</button>
+          <button @click="doOpenDb" class="px-4 py-2 rounded bg-blue-500 text-white" :disabled="!dbName || !dbPath">Open</button>
         </div>
       </div>
     </div>
@@ -184,6 +190,7 @@ import TreeView from './components/TreeView.vue';
 import BookTable from './components/BookTable.vue';
 import BookDetail from './components/BookDetail.vue';
 import { invoke } from '@tauri-apps/api/core';
+import { save, open } from '@tauri-apps/plugin-dialog';
 
 const store = useLibraryStore();
 
@@ -326,8 +333,12 @@ const handleContextMenu = (action: string) => {
   } else if (action === 'addBook') {
     openAddBookModal();
   } else if (action === 'createDb') {
+    dbName.value = '';
+    dbPath.value = '';
     showCreateDb.value = true;
   } else if (action === 'openDb') {
+    dbName.value = '';
+    dbPath.value = '';
     showOpenDb.value = true;
   }
   closeContextMenu();
@@ -341,14 +352,39 @@ const doAddCategory = async () => {
   }
 };
 
+const selectSavePath = async () => {
+  const filePath = await save({
+    filters: [{ name: 'Database', extensions: ['db', 'sqlite'] }]
+  });
+  if (filePath) {
+    dbPath.value = filePath;
+  }
+};
+
+const selectOpenPath = async () => {
+  const filePath = await open({
+    filters: [{ name: 'Database', extensions: ['db', 'sqlite'] }]
+  });
+  if (filePath) {
+    // If it's an array, take the first element (though open defaults to single selection)
+    dbPath.value = Array.isArray(filePath) ? filePath[0] : filePath;
+  }
+};
+
 const doCreateDb = async () => {
+  if (!dbName.value || !dbPath.value) return;
   await store.createDatabase(dbName.value, dbPath.value);
   showCreateDb.value = false;
+  dbName.value = '';
+  dbPath.value = '';
 };
 
 const doOpenDb = async () => {
+  if (!dbName.value || !dbPath.value) return;
   await store.openDatabase(dbName.value, dbPath.value);
   showOpenDb.value = false;
+  dbName.value = '';
+  dbPath.value = '';
 };
 
 const exportBibtex = async () => {
