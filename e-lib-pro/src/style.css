@@ -20,18 +20,18 @@ html, body {
 }
 
 .font-menu {
-  font-family: var(--font-menu-family);
-  font-size: var(--font-menu-size);
+  font-family: var(--font-menu-family) !important;
+  font-size: var(--font-menu-size) !important;
 }
 
 .font-ui {
-  font-family: var(--font-ui-family);
-  font-size: var(--font-ui-size);
+  font-family: var(--font-ui-family) !important;
+  font-size: var(--font-ui-size) !important;
 }
 
 .font-book {
-  font-family: var(--font-book-family);
-  font-size: 1em;
+  font-family: var(--font-book-family) !important;
+  font-size: 1em !important;
 }
 
 /* Custom Scrollbars for Light/Dark Mode */

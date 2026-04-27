@@ -103,11 +103,18 @@
         <div class="space-y-4">
           <!-- General -->
           <div class="p-3 border rounded dark:border-gray-700">
-            <h3 class="font-semibold mb-2">General</h3>
-            <label class="flex flex-col space-y-1">
-              <span class="text-sm">Primary Color</span>
-              <input type="color" v-model="config.primaryColor" @change="applyConfig" class="w-full h-8 cursor-pointer" />
-            </label>
+            <h3 class="font-semibold mb-2">Theme Color</h3>
+            <div class="flex flex-wrap gap-3">
+              <button 
+                v-for="color in themeColors" 
+                :key="color.value"
+                @click="config.primaryColor = color.value; applyConfig()"
+                class="w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 focus:outline-none"
+                :class="config.primaryColor === color.value ? 'border-gray-900 dark:border-white shadow-lg' : 'border-transparent'"
+                :style="{ backgroundColor: color.value }"
+                :title="color.name"
+              ></button>
+            </div>
           </div>
 
           <!-- Fonts -->
@@ -343,6 +350,21 @@ const toggleTheme = async () => {
   applyConfig();
   await saveConfig();
 };
+
+const themeColors = [
+  { name: 'Blue (Default)', value: '#3b82f6' },
+  { name: 'Indigo', value: '#4f46e5' },
+  { name: 'Purple', value: '#9333ea' },
+  { name: 'Pink', value: '#db2777' },
+  { name: 'Red', value: '#dc2626' },
+  { name: 'Orange', value: '#ea580c' },
+  { name: 'Amber', value: '#d97706' },
+  { name: 'Emerald', value: '#ca8a04' },
+  { name: 'Green', value: '#16a34a' },
+  { name: 'Teal', value: '#0d9488' },
+  { name: 'Cyan', value: '#0891b2' },
+  { name: 'Slate', value: '#475569' },
+];
 
 const contextMenu = ref({
   show: false,
