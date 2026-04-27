@@ -26,10 +26,10 @@
           <a href="#" @click.prevent="openLocalPath" class="text-blue-500 hover:underline cursor-pointer">{{ book.local_path || 'Not set' }}</a>
         </p>
       </div>
-      <div class="mt-4 flex flex-col h-full overflow-hidden">
+      <div class="mt-4 flex flex-col">
         <h3 class="font-semibold text-sm mb-2 text-gray-900 dark:text-gray-100">Personal Notes</h3>
         <div 
-          class="flex-1 overflow-y-auto p-4 rounded bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 prose prose-sm dark:prose-invert max-w-none break-words"
+          class="p-4 rounded bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 prose dark:prose-invert max-w-none break-words custom-prose"
           v-html="renderedNotes"
         ></div>
       </div>

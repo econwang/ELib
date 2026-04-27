@@ -15,3 +15,76 @@ html, body {
   display: flex;
   flex-direction: column;
 }
+
+/* Custom Scrollbars for Light/Dark Mode */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent; /* gray-400 */
+}
+.dark * {
+  scrollbar-color: rgba(75, 85, 99, 0.5) transparent; /* gray-600 */
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5); /* gray-400 */
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(107, 114, 128, 0.8); /* gray-500 */
+}
+.dark ::-webkit-scrollbar-thumb {
+  background-color: rgba(75, 85, 99, 0.5); /* gray-600 */
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.8); /* gray-400 */
+}
+
+/* Custom Markdown Typography Scaling (Adapts to config.fontSize) */
+.custom-prose {
+  font-size: 1em !important;
+  line-height: 1.6 !important;
+}
+.custom-prose h1 {
+  font-size: 1.6em !important;
+  margin-top: 1em !important;
+  margin-bottom: 0.5em !important;
+  font-weight: 700 !important;
+}
+.custom-prose h2 {
+  font-size: 1.4em !important;
+  margin-top: 1em !important;
+  margin-bottom: 0.5em !important;
+  font-weight: 600 !important;
+}
+.custom-prose h3 {
+  font-size: 1.2em !important;
+  margin-top: 1em !important;
+  margin-bottom: 0.5em !important;
+  font-weight: 600 !important;
+}
+.custom-prose h4, .custom-prose h5, .custom-prose h6 {
+  font-size: 1.1em !important;
+  margin-top: 1em !important;
+  margin-bottom: 0.5em !important;
+  font-weight: 600 !important;
+}
+.custom-prose p, .custom-prose ul, .custom-prose ol {
+  margin-top: 0.5em !important;
+  margin-bottom: 0.5em !important;
+}
+.custom-prose li {
+  margin-top: 0.25em !important;
+  margin-bottom: 0.25em !important;
+}
+.custom-prose code {
+  font-size: 0.9em !important;
+}
