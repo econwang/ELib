@@ -179,12 +179,21 @@
           </div>
           <textarea v-model="bookForm.notes" placeholder="Notes" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 h-20"></textarea>
           
-          <div class="border border-dashed border-gray-400 p-4 text-center rounded">
-            <label class="cursor-pointer block">
-              <span class="text-blue-500">Upload Cover Image</span>
-              <input type="file" accept="image/*" @change="onCoverChange" class="hidden" />
-            </label>
-            <div v-if="bookForm.coverName" class="text-xs text-gray-500 mt-2">{{ bookForm.coverName }}</div>
+          <div class="border border-dashed border-gray-400 p-4 rounded space-y-3">
+            <div class="text-center">
+              <label class="cursor-pointer">
+                <span class="text-blue-500 hover:underline">Upload Local Cover Image</span>
+                <input type="file" accept="image/*" @change="onCoverChange" class="hidden" />
+              </label>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-gray-500 text-sm font-semibold">OR</span>
+              <input v-model="bookForm.coverUrl" placeholder="Paste Image URL here..." class="flex-1 p-1.5 border rounded text-sm dark:bg-gray-700 dark:border-gray-600" />
+              <button @click="fetchCoverUrl" type="button" class="px-3 py-1.5 bg-gray-200 dark:bg-gray-700 rounded text-sm hover:bg-gray-300 dark:hover:bg-gray-600" :disabled="isFetchingCover">
+                {{ isFetchingCover ? 'Fetching...' : 'Fetch' }}
+              </button>
+            </div>
+            <div v-if="bookForm.coverName" class="text-xs text-center text-green-600 dark:text-green-400 mt-2 font-medium">Ready: {{ bookForm.coverName }}</div>
           </div>
           
           <div class="border border-dashed border-gray-400 p-4 text-center rounded">
@@ -537,9 +546,10 @@ const exportBibtex = async () => {
 };
 
 // Add Book Logic
+const isFetchingCover = ref(false);
 const bookForm = ref({
   id: null as number | null,
-  title: '', author: '', publisher: '', isbn: '', edition: '', local_path: '', notes: '', bibtex: '', coverBytes: [] as number[], coverName: ''
+  title: '', author: '', publisher: '', isbn: '', edition: '', local_path: '', notes: '', bibtex: '', coverBytes: [] as number[], coverName: '', coverUrl: ''
 });
 
 const openAddBookModal = () => {
@@ -547,7 +557,7 @@ const openAddBookModal = () => {
     alert('Please select a specific category first to add a book.');
     return;
   }
-  bookForm.value = { id: null, title: '', author: '', publisher: '', isbn: '', edition: '', local_path: '', notes: '', bibtex: '', coverBytes: [], coverName: '' };
+  bookForm.value = { id: null, title: '', author: '', publisher: '', isbn: '', edition: '', local_path: '', notes: '', bibtex: '', coverBytes: [], coverName: '', coverUrl: '' };
   showAddBook.value = true;
 };
 
@@ -563,7 +573,8 @@ const openEditBookModal = (book: any) => {
     notes: book.notes,
     bibtex: '',
     coverBytes: [],
-    coverName: ''
+    coverName: '',
+    coverUrl: ''
   };
   showAddBook.value = true;
 };
@@ -592,6 +603,23 @@ const onCoverChange = (e: any) => {
       }
     };
     reader.readAsArrayBuffer(file);
+  }
+};
+
+const fetchCoverUrl = async () => {
+  const url = bookForm.value.coverUrl.trim();
+  if (!url) return;
+  
+  isFetchingCover.value = true;
+  try {
+    const bytes = await invoke('fetch_image_url', { url }) as number[];
+    bookForm.value.coverBytes = bytes;
+    bookForm.value.coverName = 'URL Image Loaded';
+  } catch (error) {
+    console.error('Failed to fetch image:', error);
+    alert('Failed to fetch image from URL: ' + error);
+  } finally {
+    isFetchingCover.value = false;
   }
 };
 

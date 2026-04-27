@@ -26,7 +26,8 @@ fn main() {
             commands::export_bibtex,
             commands::read_config,
             commands::save_config,
-            commands::open_local_file
+            commands::open_local_file,
+            commands::fetch_image_url
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

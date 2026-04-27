@@ -5,6 +5,7 @@ use std::io::Cursor;
 use rusqlite::params;
 use serde::{Deserialize, Serialize};
 use std::fs;
+use std::io::Read;
 use std::path::Path;
 use base64::{Engine as _, engine::general_purpose::STANDARD};
 
@@ -378,4 +379,12 @@ pub fn delete_category(db_name: String, category_id: i32) -> Result<String, Stri
 #[command]
 pub fn open_local_file(path: String) -> Result<(), String> {
     open::that(&path).map_err(|e| e.to_string())
+}
+
+#[command]
+pub fn fetch_image_url(url: String) -> Result<Vec<u8>, String> {
+    let response = ureq::get(&url).call().map_err(|e| e.to_string())?;
+    let mut bytes = Vec::new();
+    response.into_reader().read_to_end(&mut bytes).map_err(|e| e.to_string())?;
+    Ok(bytes)
 }
