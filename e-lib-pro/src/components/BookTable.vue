@@ -1,13 +1,13 @@
 <template>
-  <div class="h-full w-full overflow-auto flex flex-col" ref="containerRef">
+  <div class="h-full w-full overflow-auto flex flex-col bg-white dark:bg-gray-900" ref="containerRef" @contextmenu.prevent="$emit('contextmenu-empty', $event)">
     <table class="w-full text-left border-collapse whitespace-nowrap table-fixed">
       <thead class="bg-gray-100 dark:bg-gray-800 sticky top-0 shadow-sm z-10">
         <tr v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
-          <th v-for="header in headerGroup.headers" :key="header.id" :style="{ width: header.getSize() + 'px' }" class="p-2 border-b border-gray-300 dark:border-gray-700 font-semibold text-sm relative group">
+          <th v-for="header in headerGroup.headers" :key="header.id" :style="{ width: header.getSize() + 'px' }" class="p-2 border-b border-gray-300 dark:border-gray-700 font-semibold text-sm relative group select-none">
             <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header" :props="header.getContext()" />
             <div
-              @mousedown="header.getResizeHandler()($event)"
-              @touchstart="header.getResizeHandler()($event)"
+              @mousedown.stop="header.getResizeHandler()($event)"
+              @touchstart.stop="header.getResizeHandler()($event)"
               class="absolute right-0 top-0 h-full w-2 cursor-col-resize hover:bg-blue-500 opacity-0 group-hover:opacity-100"
               :class="{ 'bg-blue-500 opacity-100': header.column.getIsResizing() }"
             ></div>
@@ -15,8 +15,13 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="row in table.getRowModel().rows" :key="row.id" @click="$emit('select', row.original)" @dblclick="$emit('edit', row.original)" @contextmenu.prevent="$emit('contextmenu', { event: $event, book: row.original })" class="hover:bg-blue-50 dark:hover:bg-gray-800 cursor-pointer border-b border-gray-100 dark:border-gray-800 transition-colors">
-          <td v-for="cell in row.getVisibleCells()" :key="cell.id" :style="{ width: cell.column.getSize() + 'px' }" class="p-2 truncate overflow-hidden">
+        <tr v-for="row in table.getRowModel().rows" :key="row.id" 
+            @click.stop="$emit('select', row.original)" 
+            @dblclick.stop="$emit('edit', row.original)" 
+            @contextmenu.prevent.stop="$emit('contextmenu', { event: $event, book: row.original })" 
+            class="cursor-pointer border-b border-gray-100 dark:border-gray-800 transition-colors"
+            :class="[selectedId === row.original.id ? 'bg-blue-100 dark:bg-blue-900' : 'hover:bg-blue-50 dark:hover:bg-gray-800']">
+          <td v-for="cell in row.getVisibleCells()" :key="cell.id" class="p-2 truncate overflow-hidden">
             <template v-if="cell.column.id === 'author'">
               <div class="flex flex-wrap gap-1">
                 <span v-for="(author, i) in String(cell.getValue() || '').split(/\s+and\s+|,/).filter(a => a.trim() !== 'and' && a.trim() !== '')" :key="i" class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded-full">
@@ -30,7 +35,7 @@
           </td>
         </tr>
         <tr v-if="!books || books.length === 0">
-          <td :colspan="columns.length" class="p-8 text-center text-gray-500">No books found in this category.</td>
+          <td :colspan="columns.length" class="p-8 text-center text-gray-500">No books found.</td>
         </tr>
       </tbody>
     </table>
@@ -43,8 +48,8 @@ import { useVueTable, getCoreRowModel, FlexRender } from '@tanstack/vue-table';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { invoke } from '@tauri-apps/api/core';
 
-const props = defineProps<{ books: any[] }>();
-defineEmits(['select', 'edit', 'contextmenu']);
+const props = defineProps<{ books: any[], selectedId?: number | null }>();
+defineEmits(['select', 'edit', 'contextmenu', 'contextmenu-empty']);
 
 const containerRef = ref<HTMLElement | null>(null);
 const containerWidth = ref(1000);

@@ -195,26 +195,12 @@ pub fn import_bibtex(db_name: String, category_id: Option<i32>, bibtex_content: 
     let conn = pool.get(&db_name).ok_or("Database not found")?;
 
     for entry in bibliography.iter() {
-        let title = match entry.title() {
-            Ok(chunks) => chunks.format_verbatim(),
-            _ => String::new(),
-        };
-
-        let author = match entry.author() {
-            Ok(persons) => {
-                let mut names = Vec::new();
-                for person in persons {
-                    names.push(person.name);
-                }
-                names.join(" and ")
-            },
-            _ => String::new(),
-        };
-
-        let publisher = entry.get("publisher").map(|c| c.format_verbatim()).unwrap_or_default();
-        let isbn = entry.get("isbn").map(|c| c.format_verbatim()).unwrap_or_default();
-        let edition = entry.get("edition").map(|c| c.format_verbatim()).unwrap_or_default();
-        let note = entry.get("note").map(|c| c.format_verbatim()).unwrap_or_default();
+        let title = entry.get_as::<String>("title").unwrap_or_default();
+        let author = entry.get_as::<String>("author").unwrap_or_default();
+        let publisher = entry.get_as::<String>("publisher").unwrap_or_default();
+        let isbn = entry.get_as::<String>("isbn").unwrap_or_default();
+        let edition = entry.get_as::<String>("edition").unwrap_or_default();
+        let note = entry.get_as::<String>("note").unwrap_or_default();
 
         conn.execute("INSERT INTO books (category_id, title, author, publisher, isbn, edition, notes) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)", params![category_id, title, author, publisher, isbn, edition, note]).map_err(|e| e.to_string())?;
     }

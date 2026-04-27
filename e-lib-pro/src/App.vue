@@ -55,18 +55,23 @@
       <div class="flex-1 flex flex-col min-w-0">
         
         <!-- Top Right Pane (Table) -->
-        <div :style="{ height: topPaneHeight + 'px' }" class="bg-white dark:bg-gray-900 overflow-auto shrink-0">
-          <BookTable :books="store.books" @select="store.selectBook" @edit="openEditBookModal" @contextmenu="onBookContextMenu" />
+        <div :style="{ height: topPaneHeight + 'px' }" class="bg-white dark:bg-gray-900 overflow-auto shrink-0 relative">
+          <BookTable v-if="store.currentCategoryId !== null" :books="store.books" :selectedId="store.selectedBook?.id" @select="store.selectBook" @edit="openEditBookModal" @contextmenu="onBookContextMenu" @contextmenu-empty="onTableContextMenu" />
+          <div v-else class="absolute inset-0 flex items-center justify-center text-gray-500 bg-white dark:bg-gray-900 z-20">
+            Select a category to view books
+          </div>
         </div>
         
         <!-- Horizontal Resizer -->
         <div class="h-1 cursor-row-resize hover:bg-[var(--color-primary)] bg-gray-300 dark:bg-gray-700 z-10 transition-colors" @mousedown="startDrag('horizontal')"></div>
 
         <!-- Bottom Right Pane (Details) -->
-        <div class="flex-1 bg-gray-50 dark:bg-gray-800 overflow-y-auto p-4 min-h-0">
+        <div v-if="store.selectedBook" class="flex-1 bg-gray-50 dark:bg-gray-800 overflow-y-auto p-4 min-h-0">
           <BookDetail :book="store.selectedBook" :cover="store.bookCover" />
         </div>
-        
+        <div v-else class="flex-1 bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-500 min-h-0">
+          Select a book to view details
+        </div>
       </div>
     </div>
   
@@ -85,6 +90,8 @@
       
       <div v-if="contextMenu.type === 'book'" class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="handleContextMenu('editBook')">Edit Book</div>
       <div v-if="contextMenu.type === 'book'" class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-red-500" @click="handleContextMenu('deleteBook')">Delete Book</div>
+
+      <div v-if="contextMenu.type === 'table'" class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="handleContextMenu('addBook')">Add New Book</div>
     </div>
 
     <!-- Modals -->
@@ -393,6 +400,19 @@ const onCategoryContextMenu = ({ event, node }: any) => {
     type: 'category',
     nodeId: node.id,
     nodeName: node.name
+  };
+};
+
+const onTableContextMenu = (event: MouseEvent) => {
+  if (store.currentCategoryId === null) return;
+  event.preventDefault();
+  contextMenu.value = {
+    show: true,
+    x: event.clientX,
+    y: event.clientY,
+    type: 'table',
+    nodeId: store.currentCategoryId,
+    nodeName: 'Table'
   };
 };
 

@@ -147,7 +147,13 @@ export const useLibraryStore = defineStore('library', () => {
 
   const fetchBooks = async (categoryId: number | null) => {
     currentCategoryId.value = categoryId;
-    if (!currentDb.value) return
+    selectedBook.value = null;
+    bookCover.value = null;
+    
+    if (!currentDb.value || categoryId === null) {
+      books.value = [];
+      return;
+    }
     try {
       books.value = await invoke('get_books', { dbName: currentDb.value, categoryId })
     } catch (e) {
