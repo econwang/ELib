@@ -26,9 +26,12 @@
           <a href="#" @click.prevent="openLocalPath" class="text-blue-500 hover:underline cursor-pointer">{{ book.local_path || 'Not set' }}</a>
         </p>
       </div>
-      <div class="mt-4 flex flex-col h-full">
-        <h3 class="font-semibold text-sm mb-1">Personal Notes</h3>
-        <textarea readonly class="w-full flex-1 p-2 border rounded bg-white dark:bg-gray-900 dark:border-gray-700 resize-none text-sm">{{ book.notes }}</textarea>
+      <div class="mt-4 flex flex-col h-full overflow-hidden">
+        <h3 class="font-semibold text-sm mb-2 text-gray-900 dark:text-gray-100">Personal Notes</h3>
+        <div 
+          class="flex-1 overflow-y-auto p-4 rounded bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 prose prose-sm dark:prose-invert max-w-none break-words"
+          v-html="renderedNotes"
+        ></div>
       </div>
     </div>
   </div>
@@ -39,8 +42,19 @@
 
 <script setup lang="ts">
 import { invoke } from '@tauri-apps/api/core';
+import { computed } from 'vue';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 
 const props = defineProps<{ book: any, cover: string | null }>();
+
+const renderedNotes = computed(() => {
+  if (!props.book?.notes) return '<p class="text-gray-400 italic">No notes available.</p>';
+  // Parse markdown
+  const rawHtml = marked.parse(props.book.notes) as string;
+  // Sanitize to prevent XSS
+  return DOMPurify.sanitize(rawHtml);
+});
 
 const openLocalPath = async () => {
   if (props.book?.local_path) {
