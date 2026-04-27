@@ -36,7 +36,7 @@ defineProps<{ nodes: any[] }>();
 const emit = defineEmits(['select', 'contextmenu']);
 
 const toggleNode = (node: any) => {
-  node.isOpen = node.isOpen === undefined ? true : !node.isOpen;
+  node.isOpen = !node.isOpen;
   emit('select', node);
 };
 </script>
