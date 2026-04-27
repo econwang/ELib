@@ -14,6 +14,22 @@ html, body {
   height: 100%;
   display: flex;
   flex-direction: column;
+  font-size: var(--font-book-size);
+}
+
+.font-menu {
+  font-family: var(--font-menu-family);
+  font-size: var(--font-menu-size);
+}
+
+.font-ui {
+  font-family: var(--font-ui-family);
+  font-size: var(--font-ui-size);
+}
+
+.font-book {
+  font-family: var(--font-book-family);
+  font-size: 1em;
 }
 
 /* Custom Scrollbars for Light/Dark Mode */
@@ -50,6 +66,7 @@ html, body {
 
 /* Custom Markdown Typography Scaling (Adapts to config.fontSize) */
 .custom-prose {
+  font-family: var(--font-book-family);
   font-size: 1em !important;
   line-height: 1.6 !important;
 }
@@ -60,25 +77,37 @@ html, body {
   margin-bottom: 0 !important;
 }
 .custom-prose h1 {
-  font-size: 1.6em !important;
+  font-size: 2em !important;
   margin-top: 1em !important;
   margin-bottom: 0.5em !important;
   font-weight: 700 !important;
 }
 .custom-prose h2 {
-  font-size: 1.4em !important;
+  font-size: 1.5em !important;
   margin-top: 1em !important;
   margin-bottom: 0.5em !important;
   font-weight: 600 !important;
 }
 .custom-prose h3 {
-  font-size: 1.2em !important;
+  font-size: 1.17em !important;
   margin-top: 1em !important;
   margin-bottom: 0.5em !important;
   font-weight: 600 !important;
 }
-.custom-prose h4, .custom-prose h5, .custom-prose h6 {
-  font-size: 1.1em !important;
+.custom-prose h4 {
+  font-size: 1em !important;
+  margin-top: 1em !important;
+  margin-bottom: 0.5em !important;
+  font-weight: 600 !important;
+}
+.custom-prose h5 {
+  font-size: 0.83em !important;
+  margin-top: 1em !important;
+  margin-bottom: 0.5em !important;
+  font-weight: 600 !important;
+}
+.custom-prose h6 {
+  font-size: 0.67em !important;
   margin-top: 1em !important;
   margin-bottom: 0.5em !important;
   font-weight: 600 !important;

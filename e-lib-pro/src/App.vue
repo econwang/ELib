@@ -1,7 +1,7 @@
 <template>
   <div class="h-screen w-screen flex flex-col bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-200" :style="customStyle">
     <!-- Menu Bar -->
-    <header class="h-8 bg-gray-200 dark:bg-gray-800 flex items-center px-4 space-x-4 text-sm select-none border-b border-gray-300 dark:border-gray-700 shrink-0">
+    <header class="h-8 bg-gray-200 dark:bg-gray-800 flex items-center px-4 space-x-4 font-menu select-none border-b border-gray-300 dark:border-gray-700 shrink-0">
       <div class="relative group">
         <div class="cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-700 px-2 py-1 rounded">File</div>
         <div class="absolute hidden group-hover:block top-full left-0 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-lg py-1 z-50 w-48">
@@ -20,6 +20,7 @@
       <div class="relative group">
         <div class="cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-700 px-2 py-1 rounded">View</div>
         <div class="absolute hidden group-hover:block top-full left-0 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-lg py-1 z-50 w-48">
+          <div class="px-4 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="toggleTheme">Toggle Light/Dark Theme</div>
           <div class="px-4 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="showConfig = true">GUI Config Editor</div>
         </div>
       </div>
@@ -29,7 +30,7 @@
     <div class="flex-1 flex overflow-hidden" @click="closeContextMenu" @mousemove="onDrag" @mouseup="stopDrag" @mouseleave="stopDrag">
       
       <!-- Left Pane (TreeView) -->
-      <div :style="{ width: leftPaneWidth + 'px' }" class="bg-gray-100 dark:bg-gray-800 overflow-y-auto shrink-0">
+      <div :style="{ width: leftPaneWidth + 'px' }" class="bg-gray-100 dark:bg-gray-800 overflow-y-auto shrink-0 font-ui">
         <div class="p-2 h-full" @contextmenu.prevent="onPaneContextMenu">
           <div v-for="db in store.databases" :key="db.id" class="mb-2 select-none">
             <div class="flex items-center space-x-2 font-bold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 p-1.5 rounded transition-colors" 
@@ -77,7 +78,7 @@
   
 
     <!-- Context Menu -->
-    <div v-if="contextMenu.show" :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }" class="fixed bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-lg py-1 z-[100] w-48 text-sm rounded shadow-xl">
+    <div v-if="contextMenu.show" :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }" class="fixed bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-lg py-1 z-[100] w-48 font-menu rounded shadow-xl">
       <div v-if="contextMenu.type === 'pane'" class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="handleContextMenu('createDb')">Create Database</div>
       <div v-if="contextMenu.type === 'pane'" class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="handleContextMenu('openDb')">Open Database</div>
       
@@ -96,22 +97,74 @@
 
     <!-- Modals -->
     <div v-if="showConfig" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-      <div class="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-96">
-        <h2 class="text-xl mb-4">Configuration</h2>
-        <div class="space-y-3">
-          <label class="flex items-center space-x-2">
-            <input type="checkbox" v-model="config.darkMode" @change="applyConfig" />
-            <span>Dark Mode</span>
-          </label>
-          <label class="flex flex-col space-y-1">
-            <span>Primary Color</span>
-            <input type="color" v-model="config.primaryColor" @change="applyConfig" class="w-full h-8 cursor-pointer" />
-          </label>
-          <label class="flex flex-col space-y-1">
-            <span>Font Size (px)</span>
-            <input type="number" v-model="config.fontSize" @change="applyConfig" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" />
-          </label>
+      <div class="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-[32rem] max-h-[90vh] overflow-y-auto">
+        <h2 class="text-xl mb-4 font-bold">UI Configuration</h2>
+        
+        <div class="space-y-4">
+          <!-- General -->
+          <div class="p-3 border rounded dark:border-gray-700">
+            <h3 class="font-semibold mb-2">General</h3>
+            <label class="flex flex-col space-y-1">
+              <span class="text-sm">Primary Color</span>
+              <input type="color" v-model="config.primaryColor" @change="applyConfig" class="w-full h-8 cursor-pointer" />
+            </label>
+          </div>
+
+          <!-- Fonts -->
+          <div class="p-3 border rounded dark:border-gray-700 space-y-3">
+            <h3 class="font-semibold border-b dark:border-gray-600 pb-1">Book Info Font (Base)</h3>
+            <div class="flex space-x-2">
+              <label class="flex flex-col space-y-1 flex-1">
+                <span class="text-sm">Family</span>
+                <select v-model="config.bookFontFamily" @change="applyConfig" class="p-1 border rounded dark:bg-gray-700 dark:border-gray-600">
+                  <option value="serif">Serif</option>
+                  <option value="sans-serif">Sans-serif</option>
+                  <option value="monospace">Monospace</option>
+                  <option value="system-ui">System UI</option>
+                </select>
+              </label>
+              <label class="flex flex-col space-y-1 flex-1">
+                <span class="text-sm">Size (px)</span>
+                <input type="number" v-model="config.bookFontSize" @change="applyConfig" class="p-1 border rounded dark:bg-gray-700 dark:border-gray-600" />
+              </label>
+            </div>
+
+            <h3 class="font-semibold border-b dark:border-gray-600 pb-1 mt-2">Menu Bar Font</h3>
+            <div class="flex space-x-2">
+              <label class="flex flex-col space-y-1 flex-1">
+                <span class="text-sm">Family</span>
+                <select v-model="config.menuFontFamily" @change="applyConfig" class="p-1 border rounded dark:bg-gray-700 dark:border-gray-600">
+                  <option value="sans-serif">Sans-serif</option>
+                  <option value="serif">Serif</option>
+                  <option value="monospace">Monospace</option>
+                  <option value="system-ui">System UI</option>
+                </select>
+              </label>
+              <label class="flex flex-col space-y-1 flex-1">
+                <span class="text-sm">Relative Size (em)</span>
+                <input type="number" step="0.1" v-model="config.menuFontSize" @change="applyConfig" class="p-1 border rounded dark:bg-gray-700 dark:border-gray-600" />
+              </label>
+            </div>
+
+            <h3 class="font-semibold border-b dark:border-gray-600 pb-1 mt-2">UI Font</h3>
+            <div class="flex space-x-2">
+              <label class="flex flex-col space-y-1 flex-1">
+                <span class="text-sm">Family</span>
+                <select v-model="config.uiFontFamily" @change="applyConfig" class="p-1 border rounded dark:bg-gray-700 dark:border-gray-600">
+                  <option value="sans-serif">Sans-serif</option>
+                  <option value="serif">Serif</option>
+                  <option value="monospace">Monospace</option>
+                  <option value="system-ui">System UI</option>
+                </select>
+              </label>
+              <label class="flex flex-col space-y-1 flex-1">
+                <span class="text-sm">Relative Size (em)</span>
+                <input type="number" step="0.1" v-model="config.uiFontSize" @change="applyConfig" class="p-1 border rounded dark:bg-gray-700 dark:border-gray-600" />
+              </label>
+            </div>
+          </div>
         </div>
+
         <div class="flex justify-end space-x-2 mt-6">
           <button @click="showConfig = false" class="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700">Close</button>
           <button @click="saveConfig" class="px-4 py-2 rounded bg-[var(--color-primary)] text-white">Save</button>
@@ -274,7 +327,22 @@ const dbPath = ref('');
 const categoryName = ref('');
 
 const showConfig = ref(false);
-const config = ref({ darkMode: false, primaryColor: '#3b82f6', fontSize: 14 });
+const config = ref({
+  darkMode: false,
+  primaryColor: '#3b82f6',
+  bookFontSize: 16,
+  menuFontFamily: 'sans-serif',
+  menuFontSize: 1.0,
+  uiFontFamily: 'sans-serif',
+  uiFontSize: 1.25,
+  bookFontFamily: 'serif'
+});
+
+const toggleTheme = async () => {
+  config.value.darkMode = !config.value.darkMode;
+  applyConfig();
+  await saveConfig();
+};
 
 const contextMenu = ref({
   show: false,
@@ -306,7 +374,12 @@ const customConfirm = (message: string, title: string = 'Confirm Action'): Promi
 const customStyle = computed(() => {
   return {
     '--color-primary': config.value.primaryColor,
-    'font-size': config.value.fontSize + 'px'
+    '--font-book-size': config.value.bookFontSize + 'px',
+    '--font-menu-family': config.value.menuFontFamily,
+    '--font-menu-size': config.value.menuFontSize + 'em',
+    '--font-ui-family': config.value.uiFontFamily,
+    '--font-ui-size': config.value.uiFontSize + 'em',
+    '--font-book-family': config.value.bookFontFamily,
   }
 });
 
@@ -317,7 +390,13 @@ onMounted(async () => {
     const conf = JSON.parse(confStr as string);
     if (conf.darkMode !== undefined) config.value.darkMode = conf.darkMode;
     if (conf.primaryColor !== undefined) config.value.primaryColor = conf.primaryColor;
-    if (conf.fontSize !== undefined) config.value.fontSize = conf.fontSize;
+    if (conf.bookFontSize !== undefined) config.value.bookFontSize = conf.bookFontSize;
+    else if (conf.fontSize !== undefined) config.value.bookFontSize = conf.fontSize; // migrate old
+    if (conf.menuFontFamily !== undefined) config.value.menuFontFamily = conf.menuFontFamily;
+    if (conf.menuFontSize !== undefined) config.value.menuFontSize = conf.menuFontSize;
+    if (conf.uiFontFamily !== undefined) config.value.uiFontFamily = conf.uiFontFamily;
+    if (conf.uiFontSize !== undefined) config.value.uiFontSize = conf.uiFontSize;
+    if (conf.bookFontFamily !== undefined) config.value.bookFontFamily = conf.bookFontFamily;
     applyConfig();
   } catch (e) {}
 });

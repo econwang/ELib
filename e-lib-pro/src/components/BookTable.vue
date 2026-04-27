@@ -3,7 +3,7 @@
     <table class="w-full text-left border-collapse whitespace-nowrap table-fixed">
       <thead class="bg-gray-100 dark:bg-gray-800 sticky top-0 shadow-sm z-10">
         <tr v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
-          <th v-for="header in headerGroup.headers" :key="header.id" :style="{ width: header.getSize() + 'px' }" class="p-2 border-b border-gray-300 dark:border-gray-700 font-semibold text-sm relative group select-none">
+          <th v-for="header in headerGroup.headers" :key="header.id" :style="{ width: header.getSize() + 'px' }" class="p-2 border-b border-gray-300 dark:border-gray-700 font-semibold font-ui relative group select-none">
             <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header" :props="header.getContext()" />
             <div
               @mousedown.stop="header.getResizeHandler()($event)"
@@ -21,11 +21,11 @@
             @contextmenu.prevent.stop="$emit('contextmenu', { event: $event, book: row.original })" 
             class="cursor-pointer border-b border-gray-100 dark:border-gray-800 transition-colors"
             :class="[selectedId === row.original.id ? 'bg-blue-100 dark:bg-blue-900' : 'hover:bg-blue-50 dark:hover:bg-gray-800']">
-          <td v-for="cell in row.getVisibleCells()" :key="cell.id" class="p-2 truncate overflow-hidden">
+          <td v-for="cell in row.getVisibleCells()" :key="cell.id" class="p-2 truncate overflow-hidden font-book">
             <template v-if="cell.column.id === 'author'">
               <div class="flex flex-wrap gap-1">
                 <span v-for="(author, i) in String(cell.getValue() || '').split(';').filter(a => a.trim() !== '')" :key="i" 
-                      class="px-2 py-0.5 text-xs rounded-full transition-colors"
+                      class="px-2 py-0.5 rounded-full transition-colors font-book" style="font-size: 0.85em;"
                       :class="[selectedId === row.original.id ? 'bg-blue-200 dark:bg-blue-800 text-blue-900 dark:text-blue-100' : 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200']">
                   {{ 
                     (() => {

@@ -8,29 +8,29 @@
 
     <!-- Right: Metadata -->
     <div class="flex-1 space-y-3 min-w-0">
-      <h2 class="text-2xl font-bold truncate" :title="book.title">{{ book.title }}</h2>
+      <h2 class="font-bold truncate font-book" style="font-size: 2em;" :title="book.title">{{ book.title }}</h2>
       <div class="grid grid-cols-2 gap-4">
-        <div class="text-sm text-gray-600 dark:text-gray-400 mb-2 flex items-center gap-2">
-          <span class="font-semibold text-gray-900 dark:text-gray-100">Author:</span>
-          <div class="flex flex-wrap gap-1">
-            <span v-for="(author, i) in String(book.author || '').split(';').filter(a => a.trim() !== '')" :key="i" class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded-full">
+        <div class="text-gray-600 dark:text-gray-400 mb-2 flex items-center gap-2">
+          <span class="font-semibold text-gray-900 dark:text-gray-100 font-ui">Author:</span>
+          <div class="flex flex-wrap gap-1 font-book">
+            <span v-for="(author, i) in String(book.author || '').split(';').filter(a => a.trim() !== '')" :key="i" class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full" style="font-size: 0.85em;">
               {{ author.trim() }}
             </span>
           </div>
         </div>
-        <p class="text-sm text-gray-600 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-gray-100">Publisher:</span> {{ book.publisher || 'Unknown' }}</p>
-        <p class="text-sm text-gray-600 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-gray-100">ISBN:</span> {{ book.isbn || 'N/A' }}</p>
-        <p class="text-sm text-gray-600 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-gray-100">Edition:</span> {{ book.edition || 'N/A' }}</p>
-        <p class="text-sm text-gray-600 dark:text-gray-300 col-span-2 truncate" :title="book.local_path">
-          <span class="font-semibold text-gray-900 dark:text-gray-100">Local Path:&nbsp;</span> 
-          <a v-if="book.local_path" href="#" @click.prevent="openLocalPath" class="text-blue-500 hover:underline cursor-pointer">{{ book.local_path }}</a>
-          <span v-else>Not set</span>
+        <p class="text-gray-600 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-gray-100 font-ui">Publisher:</span> <span class="font-book">{{ book.publisher || 'Unknown' }}</span></p>
+        <p class="text-gray-600 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-gray-100 font-ui">ISBN:</span> <span class="font-book">{{ book.isbn || 'N/A' }}</span></p>
+        <p class="text-gray-600 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-gray-100 font-ui">Edition:</span> <span class="font-book">{{ book.edition || 'N/A' }}</span></p>
+        <p class="text-gray-600 dark:text-gray-300 col-span-2 truncate" :title="book.local_path">
+          <span class="font-semibold text-gray-900 dark:text-gray-100 font-ui">Local Path:&nbsp;</span> 
+          <a v-if="book.local_path" href="#" @click.prevent="openLocalPath" class="text-blue-500 hover:underline cursor-pointer font-book">{{ book.local_path }}</a>
+          <span v-else class="font-book">Not set</span>
         </p>
       </div>
       <div class="mt-4 flex flex-col">
-        <h3 class="font-semibold text-sm mb-2 text-gray-900 dark:text-gray-100">Personal Notes</h3>
+        <h3 class="font-semibold mb-2 text-gray-900 dark:text-gray-100 font-ui">Personal Notes</h3>
         <div 
-          class="p-4 rounded bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 prose dark:prose-invert max-w-none break-words custom-prose"
+          class="p-4 rounded bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 prose dark:prose-invert max-w-none break-words custom-prose font-book"
           v-html="renderedNotes"
         ></div>
       </div>

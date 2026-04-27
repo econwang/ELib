@@ -1,5 +1,5 @@
 <template>
-  <ul class="pl-4 border-l border-gray-300 dark:border-gray-600 ml-2 relative">
+  <ul class="pl-4 font-ui border-l border-gray-300 dark:border-gray-600 ml-2 relative">
     <li v-for="node in nodes" :key="node.id" class="my-1 relative">
       <div class="absolute w-3 border-t border-gray-300 dark:border-gray-600 top-3 -left-4"></div>
       
