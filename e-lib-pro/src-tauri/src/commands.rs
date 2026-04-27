@@ -252,8 +252,8 @@ pub fn import_bibtex(db_name: String, category_id: Option<i32>, bibtex_content: 
     let conn = pool.get(&db_name).ok_or("Database not found")?;
 
     for entry in bibliography.iter() {
-        let title = if !form_title.is_empty() { form_title.clone() } else { entry.get_as::<String>("title").unwrap_or_default() };
-        let author = if !form_author.is_empty() { form_author.clone() } else {
+        let title = if !form_title.trim().is_empty() { form_title.trim().to_string() } else { entry.get_as::<String>("title").unwrap_or_default() };
+        let author = if !form_author.trim().is_empty() { form_author.trim().to_string() } else {
             match entry.author() {
                 Ok(persons) => {
                     let mut names = Vec::new();
@@ -273,9 +273,9 @@ pub fn import_bibtex(db_name: String, category_id: Option<i32>, bibtex_content: 
                 _ => String::new(),
             }
         };
-        let publisher = if !form_publisher.is_empty() { form_publisher.clone() } else { entry.get_as::<String>("publisher").unwrap_or_default() };
-        let isbn = if !form_isbn.is_empty() { form_isbn.clone() } else { entry.get_as::<String>("isbn").unwrap_or_default() };
-        let edition = if !form_edition.is_empty() { form_edition.clone() } else { entry.get_as::<String>("edition").unwrap_or_default() };
+        let publisher = if !form_publisher.trim().is_empty() { form_publisher.trim().to_string() } else { entry.get_as::<String>("publisher").unwrap_or_default() };
+        let isbn = if !form_isbn.trim().is_empty() { form_isbn.trim().to_string() } else { entry.get_as::<String>("isbn").unwrap_or_default() };
+        let edition = if !form_edition.trim().is_empty() { form_edition.trim().to_string() } else { entry.get_as::<String>("edition").unwrap_or_default() };
         let bib_note = entry.get_as::<String>("note").unwrap_or_default();
         
         let mut combined_notes = form_notes.clone();
