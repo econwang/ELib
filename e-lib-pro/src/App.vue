@@ -143,7 +143,7 @@
     <div v-if="showAddCategory" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-96">
         <h2 class="text-xl mb-4">Add Category</h2>
-        <p class="mb-2 text-sm text-gray-500" v-if="contextMenu.nodeId">Parent: {{ contextMenu.nodeName }}</p>
+        <p class="mb-2 text-sm text-gray-500" v-if="contextMenu.type === 'category'">Parent: {{ contextMenu.nodeName }}</p>
         <p class="mb-2 text-sm text-gray-500" v-else>Parent: Root</p>
         <input v-model="categoryName" @keyup.enter="doAddCategory" placeholder="Category Name" class="w-full mb-4 p-2 border rounded dark:bg-gray-700 dark:border-gray-600" />
         <div class="flex justify-end space-x-2">
@@ -368,7 +368,8 @@ const handleContextMenu = async (action: string) => {
 
 const doAddCategory = async () => {
   if (categoryName.value.trim()) {
-    await store.addCategory(contextMenu.value.nodeId, categoryName.value.trim());
+    const parentId = contextMenu.value.type === 'category' ? contextMenu.value.nodeId as number : null;
+    await store.addCategory(parentId, categoryName.value.trim());
     categoryName.value = '';
     showAddCategory.value = false;
   }
