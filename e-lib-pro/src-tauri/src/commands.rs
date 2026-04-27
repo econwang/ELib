@@ -385,6 +385,6 @@ pub fn open_local_file(path: String) -> Result<(), String> {
 pub fn fetch_image_url(url: String) -> Result<Vec<u8>, String> {
     let response = ureq::get(&url).call().map_err(|e| e.to_string())?;
     let mut bytes = Vec::new();
-    response.into_reader().read_to_end(&mut bytes).map_err(|e| e.to_string())?;
+    response.into_body().into_reader().read_to_end(&mut bytes).map_err(|e| e.to_string())?;
     Ok(bytes)
 }
