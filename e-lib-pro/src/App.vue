@@ -656,7 +656,10 @@ const doAddBook = async () => {
         await invoke('import_bibtex', { 
           dbName: store.currentDb, 
           categoryId: targetCategory, 
-          bibtexContent: bookForm.value.bibtex 
+          bibtexContent: bookForm.value.bibtex,
+          localPath: bookForm.value.local_path,
+          coverBytes: bookForm.value.coverBytes,
+          formNotes: bookForm.value.notes
         });
       } else {
         await invoke('add_book', {

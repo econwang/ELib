@@ -226,10 +226,28 @@ pub fn delete_book(db_name: String, id: i32) -> Result<String, String> {
 }
 
 #[command]
-pub fn import_bibtex(db_name: String, category_id: Option<i32>, bibtex_content: String) -> Result<String, String> {
+pub fn import_bibtex(db_name: String, category_id: Option<i32>, bibtex_content: String, local_path: String, cover_bytes: Vec<u8>, form_notes: String) -> Result<String, String> {
     let bibliography = biblatex::Bibliography::parse(&bibtex_content)
         .map_err(|e| format!("{:?}", e))?;
     
+    let compressed_bytes = if !cover_bytes.is_empty() {
+        let img = image::load_from_memory(&cover_bytes).map_err(|e| e.to_string())?;
+        let (width, height) = img.dimensions();
+        let scale = f32::min(800.0 / width as f32, 800.0 / height as f32);
+        let resized = if scale < 1.0 {
+            let new_width = (width as f32 * scale) as u32;
+            let new_height = (height as f32 * scale) as u32;
+            img.resize_exact(new_width, new_height, image::imageops::FilterType::Lanczos3)
+        } else {
+            img
+        };
+        let mut cb = Vec::new();
+        resized.write_to(&mut std::io::Cursor::new(&mut cb), image::ImageOutputFormat::Jpeg(85)).map_err(|e| e.to_string())?;
+        Some(cb)
+    } else {
+        None
+    };
+
     let pool = DB_POOL.lock().unwrap();
     let conn = pool.get(&db_name).ok_or("Database not found")?;
 
@@ -256,9 +274,21 @@ pub fn import_bibtex(db_name: String, category_id: Option<i32>, bibtex_content: 
         let publisher = entry.get_as::<String>("publisher").unwrap_or_default();
         let isbn = entry.get_as::<String>("isbn").unwrap_or_default();
         let edition = entry.get_as::<String>("edition").unwrap_or_default();
-        let note = entry.get_as::<String>("note").unwrap_or_default();
+        let bib_note = entry.get_as::<String>("note").unwrap_or_default();
+        
+        let mut combined_notes = form_notes.clone();
+        if !bib_note.is_empty() {
+            if !combined_notes.is_empty() {
+                combined_notes.push_str("\n\n");
+            }
+            combined_notes.push_str("BibTeX Note: ");
+            combined_notes.push_str(&bib_note);
+        }
 
-        conn.execute("INSERT INTO books (category_id, title, author, publisher, isbn, edition, notes) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)", params![category_id, title, author, publisher, isbn, edition, note]).map_err(|e| e.to_string())?;
+        conn.execute(
+            "INSERT INTO books (category_id, title, author, publisher, isbn, edition, local_path, cover_image, notes) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)", 
+            params![category_id, title, author, publisher, isbn, edition, local_path, compressed_bytes.as_ref(), combined_notes]
+        ).map_err(|e| e.to_string())?;
     }
     Ok("BibTeX imported successfully".to_string())
 }
