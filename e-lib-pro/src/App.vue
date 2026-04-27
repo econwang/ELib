@@ -42,7 +42,7 @@
               <span class="truncate">{{ db.description }}</span>
             </div>
             <div v-show="store.currentDb === db.id" class="mt-1">
-              <TreeView :nodes="categoryTree" @select="onCategorySelect" @toggle="onCategoryToggle" @contextmenu="onCategoryContextMenu" />
+              <TreeView :nodes="categoryTree" :currentId="store.currentCategoryId" @select="onCategorySelect" @toggle="onCategoryToggle" @contextmenu="onCategoryContextMenu" />
             </div>
           </div>
         </div>
@@ -376,34 +376,41 @@ const handleDeleteCategory = async (categoryId: number) => {
 };
 
 const handleContextMenu = async (action: string) => {
-  if (action === 'addCategory') {
-    categoryName.value = '';
-    showAddCategory.value = true;
-  } else if (action === 'addBook') {
-    store.currentCategoryId = contextMenu.value.nodeId as number;
-    openAddBookModal();
-  } else if (action === 'createDb') {
-    dbDescription.value = '';
-    dbPath.value = '';
-    showCreateDb.value = true;
-  } else if (action === 'openDb') {
-    dbPath.value = '';
-    showOpenDb.value = true;
-  } else if (action === 'closeDb') {
-    await store.closeDatabase(contextMenu.value.nodeId as unknown as string);
-  } else if (action === 'editBook') {
-    const book = store.books.find(b => b.id === contextMenu.value.nodeId);
-    if (book) openEditBookModal(book);
-  } else if (action === 'deleteBook') {
-    const yes = await confirm(`Are you sure you want to delete "${contextMenu.value.nodeName}"?`, { title: 'Confirm Deletion' });
-    if (yes) {
-      await invoke('delete_book', { dbName: store.currentDb, id: contextMenu.value.nodeId as number });
-      store.fetchBooks(store.currentCategoryId);
-    }
-  } else if (action === 'deleteCategory') {
-    await handleDeleteCategory(contextMenu.value.nodeId as number);
-  }
+  const currentAction = action;
+  const menuData = { ...contextMenu.value };
   closeContextMenu();
+
+  try {
+    if (currentAction === 'addCategory') {
+      categoryName.value = '';
+      showAddCategory.value = true;
+    } else if (currentAction === 'addBook') {
+      store.currentCategoryId = menuData.nodeId as number;
+      openAddBookModal();
+    } else if (currentAction === 'createDb') {
+      dbDescription.value = '';
+      dbPath.value = '';
+      showCreateDb.value = true;
+    } else if (currentAction === 'openDb') {
+      dbPath.value = '';
+      showOpenDb.value = true;
+    } else if (currentAction === 'closeDb') {
+      await store.closeDatabase(menuData.nodeId as unknown as string);
+    } else if (currentAction === 'editBook') {
+      const book = store.books.find(b => b.id === menuData.nodeId);
+      if (book) openEditBookModal(book);
+    } else if (currentAction === 'deleteBook') {
+      const yes = await confirm(`Are you sure you want to delete "${menuData.nodeName}"?`, { title: 'Confirm Deletion' });
+      if (yes) {
+        await invoke('delete_book', { dbName: store.currentDb, id: menuData.nodeId as number });
+        store.fetchBooks(store.currentCategoryId);
+      }
+    } else if (currentAction === 'deleteCategory') {
+      await handleDeleteCategory(menuData.nodeId as number);
+    }
+  } catch (e) {
+    console.error('Context menu action failed:', e);
+  }
 };
 
 const doAddCategory = async () => {
