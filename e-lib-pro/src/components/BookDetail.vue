@@ -10,7 +10,14 @@
     <div class="flex-1 space-y-3 min-w-0">
       <h2 class="text-2xl font-bold truncate" :title="book.title">{{ book.title }}</h2>
       <div class="grid grid-cols-2 gap-4">
-        <p class="text-sm text-gray-600 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-gray-100">Author:</span> {{ book.author || 'Unknown' }}</p>
+        <div class="text-sm text-gray-600 dark:text-gray-400 mb-2 flex items-center gap-2">
+          <span class="font-semibold text-gray-900 dark:text-gray-100">Author:</span>
+          <div class="flex flex-wrap gap-1">
+            <span v-for="(author, i) in String(book.author || '').split(';').filter(a => a.trim() !== '')" :key="i" class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded-full">
+              {{ author.trim() }}
+            </span>
+          </div>
+        </div>
         <p class="text-sm text-gray-600 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-gray-100">Publisher:</span> {{ book.publisher || 'Unknown' }}</p>
         <p class="text-sm text-gray-600 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-gray-100">ISBN:</span> {{ book.isbn || 'N/A' }}</p>
         <p class="text-sm text-gray-600 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-gray-100">Edition:</span> {{ book.edition || 'N/A' }}</p>

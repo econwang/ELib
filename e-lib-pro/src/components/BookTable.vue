@@ -24,8 +24,20 @@
           <td v-for="cell in row.getVisibleCells()" :key="cell.id" class="p-2 truncate overflow-hidden">
             <template v-if="cell.column.id === 'author'">
               <div class="flex flex-wrap gap-1">
-                <span v-for="(author, i) in String(cell.getValue() || '').split(/\s+and\s+|,/).filter(a => a.trim() !== 'and' && a.trim() !== '')" :key="i" class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded-full">
-                  {{ author.trim() }}
+                <span v-for="(author, i) in String(cell.getValue() || '').split(';').filter(a => a.trim() !== '')" :key="i" class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded-full">
+                  {{ 
+                    (() => {
+                      const name = author.trim();
+                      const parts = name.split(' ');
+                      if (parts.length > 1) {
+                        // Abbreviate first names, keep last name full
+                        const last = parts.pop();
+                        const initials = parts.map(p => p.charAt(0).toUpperCase() + '.').join(' ');
+                        return `${initials} ${last}`;
+                      }
+                      return name;
+                    })()
+                  }}
                 </span>
               </div>
             </template>

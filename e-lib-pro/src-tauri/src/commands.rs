@@ -196,7 +196,24 @@ pub fn import_bibtex(db_name: String, category_id: Option<i32>, bibtex_content: 
 
     for entry in bibliography.iter() {
         let title = entry.get_as::<String>("title").unwrap_or_default();
-        let author = entry.get_as::<String>("author").unwrap_or_default();
+        let author = match entry.author() {
+            Ok(persons) => {
+                let mut names = Vec::new();
+                for person in persons {
+                    let first = person.given_name;
+                    let last = person.name;
+                    let mut full = String::new();
+                    if !first.is_empty() {
+                        full.push_str(&first);
+                        full.push(' ');
+                    }
+                    full.push_str(&last);
+                    names.push(full.trim().to_string());
+                }
+                names.join(";")
+            },
+            _ => String::new(),
+        };
         let publisher = entry.get_as::<String>("publisher").unwrap_or_default();
         let isbn = entry.get_as::<String>("isbn").unwrap_or_default();
         let edition = entry.get_as::<String>("edition").unwrap_or_default();
