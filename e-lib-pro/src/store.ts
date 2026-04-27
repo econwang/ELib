@@ -2,8 +2,14 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 
+export interface DatabaseInfo {
+  id: string;
+  path: string;
+  description: string;
+}
+
 export const useLibraryStore = defineStore('library', () => {
-  const databases = ref<string[]>([])
+  const databases = ref<DatabaseInfo[]>([])
   const currentDb = ref<string | null>(null)
   const categories = ref<any[]>([])
   const books = ref<any[]>([])
@@ -13,13 +19,12 @@ export const useLibraryStore = defineStore('library', () => {
   const loadDatabases = async () => {
     const saved = localStorage.getItem('elib_dbs')
     if (saved) {
-      databases.value = JSON.parse(saved)
+      const parsed = JSON.parse(saved);
+      databases.value = parsed.map((d: any) => typeof d === 'string' ? { id: d, path: d + '.db', description: d } : d);
       if (databases.value.length > 0) {
-        // Automatically open the first database
-        await openDatabase(databases.value[0], databases.value[0] + '.db')
+        await openDatabase(databases.value[0].path)
       }
     } else {
-      // If no database exists, auto-create a default one for the user
       await createDatabase('Default Library', 'default.db')
     }
   }
@@ -28,14 +33,15 @@ export const useLibraryStore = defineStore('library', () => {
     localStorage.setItem('elib_dbs', JSON.stringify(databases.value))
   }
 
-  const openDatabase = async (name: string, path: string) => {
+  const openDatabase = async (path: string) => {
     try {
-      await invoke('open_db', { dbName: name, path })
-      if (!databases.value.includes(name)) {
-        databases.value.push(name)
+      await invoke('open_db', { dbName: path, path })
+      const desc = await invoke('get_db_description', { dbName: path }) as string;
+      if (!databases.value.find(d => d.id === path)) {
+        databases.value.push({ id: path, path, description: desc })
         saveDatabases()
       }
-      currentDb.value = name
+      currentDb.value = path
       await fetchCategories()
       await fetchBooks(null)
     } catch (e) {
@@ -43,18 +49,38 @@ export const useLibraryStore = defineStore('library', () => {
     }
   }
 
-  const createDatabase = async (name: string, path: string) => {
+  const createDatabase = async (description: string, path: string) => {
     try {
-      await invoke('create_db', { dbName: name, path })
-      if (!databases.value.includes(name)) {
-        databases.value.push(name)
+      await invoke('create_db', { dbName: path, path, description })
+      if (!databases.value.find(d => d.id === path)) {
+        databases.value.push({ id: path, path, description })
         saveDatabases()
       }
-      currentDb.value = name
+      currentDb.value = path
       await fetchCategories()
       await fetchBooks(null)
     } catch (e) {
       console.error(e)
+    }
+  }
+
+  const closeDatabase = async (id: string) => {
+    try {
+      await invoke('close_db', { dbName: id });
+      databases.value = databases.value.filter(d => d.id !== id);
+      saveDatabases();
+      if (currentDb.value === id) {
+        currentDb.value = null;
+        categories.value = [];
+        books.value = [];
+        selectedBook.value = null;
+        bookCover.value = null;
+        if (databases.value.length > 0) {
+          await openDatabase(databases.value[0].path);
+        }
+      }
+    } catch (e) {
+      console.error(e);
     }
   }
 
@@ -113,6 +139,6 @@ export const useLibraryStore = defineStore('library', () => {
 
   return {
     databases, currentDb, categories, books, selectedBook, bookCover,
-    loadDatabases, openDatabase, createDatabase, fetchCategories, fetchBooks, selectBook, addCategory
+    loadDatabases, openDatabase, createDatabase, closeDatabase, fetchCategories, fetchBooks, selectBook, addCategory
   }
 })

@@ -5,8 +5,8 @@
       <div class="relative group">
         <div class="cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-700 px-2 py-1 rounded">File</div>
         <div class="absolute hidden group-hover:block top-full left-0 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-lg py-1 z-50 w-48">
-          <div class="px-4 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="dbName=''; dbPath=''; showCreateDb=true">Create New Database</div>
-          <div class="px-4 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="dbName=''; dbPath=''; showOpenDb=true">Open Existing Database</div>
+          <div class="px-4 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="dbDescription=''; dbPath=''; showCreateDb=true">Create New Database</div>
+          <div class="px-4 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="dbPath=''; showOpenDb=true">Open Existing Database</div>
           <div class="px-4 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="exportBibtex">Export BibTeX</div>
         </div>
       </div>
@@ -25,23 +25,25 @@
       </div>
     </header>
 
-    <!-- Main Content Splitpanes -->
-    
     <!-- Main Content Resizable Panes -->
     <div class="flex-1 flex overflow-hidden" @click="closeContextMenu" @mousemove="onDrag" @mouseup="stopDrag" @mouseleave="stopDrag">
       
       <!-- Left Pane (TreeView) -->
       <div :style="{ width: leftPaneWidth + 'px' }" class="bg-gray-100 dark:bg-gray-800 overflow-y-auto shrink-0">
         <div class="p-2 h-full" @contextmenu.prevent="onPaneContextMenu">
-          <div v-for="db in store.databases" :key="db" class="mb-4">
-            <div class="font-bold cursor-pointer hover:text-[var(--color-primary)] p-1 rounded transition-colors" :class="{'bg-gray-200 dark:bg-gray-700': store.currentDb === db}" @click="selectDb(db)" @contextmenu.stop.prevent="onDbContextMenu($event, db)">
-              🗄️ {{ db }}
+          <div v-for="db in store.databases" :key="db.id" class="mb-2 select-none">
+            <div class="flex items-center space-x-2 font-bold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 p-1.5 rounded transition-colors" 
+                 :class="{'bg-gray-200 dark:bg-gray-700': store.currentDb === db.id}" 
+                 @click="selectDb(db)" 
+                 @contextmenu.stop.prevent="onDbContextMenu($event, db)">
+              <svg class="w-4 h-4 text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+              </svg>
+              <span class="truncate">{{ db.description }}</span>
             </div>
-            <TreeView v-if="store.currentDb === db" :nodes="buildTree(store.categories)" @select="onCategorySelect" @contextmenu="onCategoryContextMenu" />
-          </div>
-          
-          <div v-if="store.databases.length === 0" class="text-gray-500 text-sm p-4 text-center mt-10">
-            No databases found.<br/>Right-click to create one.
+            <div v-show="store.currentDb === db.id" class="mt-1">
+              <TreeView :nodes="buildTree(store.categories)" @select="onCategorySelect" @contextmenu="onCategoryContextMenu" />
+            </div>
           </div>
         </div>
       </div>
@@ -70,12 +72,16 @@
   
 
     <!-- Context Menu -->
-    <div v-if="contextMenu.show" :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }" class="fixed bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-lg py-1 z-[100] w-48 text-sm">
+    <div v-if="contextMenu.show" :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }" class="fixed bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-lg py-1 z-[100] w-48 text-sm rounded shadow-xl">
       <div v-if="contextMenu.type === 'pane'" class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="handleContextMenu('createDb')">Create Database</div>
       <div v-if="contextMenu.type === 'pane'" class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="handleContextMenu('openDb')">Open Database</div>
       
-      <div v-if="contextMenu.type !== 'pane'" class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="handleContextMenu('addBook')">Add Book to {{ contextMenu.type === 'db' ? 'Root' : 'Category' }}</div>
-      <div v-if="contextMenu.type !== 'pane'" class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="handleContextMenu('addCategory')">Add {{ contextMenu.type === 'db' ? 'Category' : 'Sub-category' }}</div>
+      <div v-if="contextMenu.type === 'db'" class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-red-500" @click="handleContextMenu('closeDb')">Close Database</div>
+      <div v-if="contextMenu.type === 'db'" class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-t border-gray-200 dark:border-gray-600 mt-1 pt-1" @click="handleContextMenu('addCategory')">Add Category</div>
+
+      <div v-if="contextMenu.type === 'category'" class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="handleContextMenu('addBook')">Add Book to Category</div>
+      <div v-if="contextMenu.type === 'category'" class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-200 dark:border-gray-600 mb-1 pb-1" @click="handleContextMenu('addCategory')">Add Sub-category</div>
+      <div v-if="contextMenu.type === 'category'" class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-red-500" @click="handleContextMenu('deleteCategory')">Delete Category</div>
     </div>
 
     <!-- Modals -->
@@ -107,14 +113,14 @@
     <div v-if="showCreateDb" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-96">
         <h2 class="text-xl mb-4">Create Database</h2>
-        <input v-model="dbName" placeholder="Database Name (e.g., Science)" class="w-full mb-2 p-2 border rounded dark:bg-gray-700 dark:border-gray-600" />
+        <input v-model="dbDescription" placeholder="Database Description (e.g., My Library)" class="w-full mb-2 p-2 border rounded dark:bg-gray-700 dark:border-gray-600" />
         <div class="flex items-center space-x-2 mb-4">
           <input v-model="dbPath" placeholder="Select save location..." readonly class="flex-1 p-2 border rounded dark:bg-gray-700 dark:border-gray-600 bg-gray-100 dark:bg-gray-900 cursor-not-allowed" />
           <button @click="selectSavePath" class="px-3 py-2 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600">Browse</button>
         </div>
         <div class="flex justify-end space-x-2">
           <button @click="showCreateDb = false" class="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700">Cancel</button>
-          <button @click="doCreateDb" class="px-4 py-2 rounded bg-blue-500 text-white" :disabled="!dbName || !dbPath">Create</button>
+          <button @click="doCreateDb" class="px-4 py-2 rounded bg-[var(--color-primary)] text-white" :disabled="!dbDescription || !dbPath">Create</button>
         </div>
       </div>
     </div>
@@ -122,14 +128,13 @@
     <div v-if="showOpenDb" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-96">
         <h2 class="text-xl mb-4">Open Database</h2>
-        <input v-model="dbName" placeholder="Display Name (e.g., My Library)" class="w-full mb-2 p-2 border rounded dark:bg-gray-700 dark:border-gray-600" />
         <div class="flex items-center space-x-2 mb-4">
           <input v-model="dbPath" placeholder="Select .db file..." readonly class="flex-1 p-2 border rounded dark:bg-gray-700 dark:border-gray-600 bg-gray-100 dark:bg-gray-900 cursor-not-allowed" />
           <button @click="selectOpenPath" class="px-3 py-2 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600">Browse</button>
         </div>
         <div class="flex justify-end space-x-2">
           <button @click="showOpenDb = false" class="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700">Cancel</button>
-          <button @click="doOpenDb" class="px-4 py-2 rounded bg-blue-500 text-white" :disabled="!dbName || !dbPath">Open</button>
+          <button @click="doOpenDb" class="px-4 py-2 rounded bg-[var(--color-primary)] text-white" :disabled="!dbPath">Open</button>
         </div>
       </div>
     </div>
@@ -190,7 +195,7 @@ import TreeView from './components/TreeView.vue';
 import BookTable from './components/BookTable.vue';
 import BookDetail from './components/BookDetail.vue';
 import { invoke } from '@tauri-apps/api/core';
-import { save, open } from '@tauri-apps/plugin-dialog';
+import { save, open, confirm } from '@tauri-apps/plugin-dialog';
 
 const store = useLibraryStore();
 
@@ -225,7 +230,7 @@ const showCreateDb = ref(false);
 const showOpenDb = ref(false);
 const showAddBook = ref(false);
 const showAddCategory = ref(false);
-const dbName = ref('');
+const dbDescription = ref('');
 const dbPath = ref('');
 const categoryName = ref('');
 
@@ -273,8 +278,8 @@ const saveConfig = async () => {
   showConfig.value = false;
 };
 
-const selectDb = (db: string) => {
-  store.currentDb = db;
+const selectDb = (db: any) => {
+  store.currentDb = db.id;
   store.fetchCategories();
   store.fetchBooks(null);
 };
@@ -300,17 +305,17 @@ const onPaneContextMenu = (event: MouseEvent) => {
   };
 };
 
-const onDbContextMenu = (event: MouseEvent, db: string) => {
+const onDbContextMenu = (event: MouseEvent, db: any) => {
   event.preventDefault();
-  store.currentDb = db;
+  store.currentDb = db.id;
   store.fetchCategories();
   contextMenu.value = {
     show: true,
     x: event.clientX,
     y: event.clientY,
     type: 'db',
-    nodeId: null,
-    nodeName: db
+    nodeId: db.id,
+    nodeName: db.description
   };
 };
 
@@ -326,20 +331,37 @@ const onCategoryContextMenu = ({ event, node }: any) => {
   };
 };
 
-const handleContextMenu = (action: string) => {
+const handleDeleteCategory = async (categoryId: number) => {
+  if (!store.currentDb) return;
+  try {
+    const count = await invoke('count_books_in_category', { dbName: store.currentDb, categoryId }) as number;
+    if (count > 0) {
+      const yes = await confirm(`This category and its sub-categories contain ${count} books. Are you sure you want to delete them all?`, { title: 'Confirm Deletion' });
+      if (!yes) return;
+    }
+    await invoke('delete_category', { dbName: store.currentDb, categoryId });
+    store.fetchCategories();
+    store.fetchBooks(null);
+  } catch(e) { console.error(e) }
+};
+
+const handleContextMenu = async (action: string) => {
   if (action === 'addCategory') {
     categoryName.value = '';
     showAddCategory.value = true;
   } else if (action === 'addBook') {
     openAddBookModal();
   } else if (action === 'createDb') {
-    dbName.value = '';
+    dbDescription.value = '';
     dbPath.value = '';
     showCreateDb.value = true;
   } else if (action === 'openDb') {
-    dbName.value = '';
     dbPath.value = '';
     showOpenDb.value = true;
+  } else if (action === 'closeDb') {
+    await store.closeDatabase(contextMenu.value.nodeId as unknown as string);
+  } else if (action === 'deleteCategory') {
+    await handleDeleteCategory(contextMenu.value.nodeId as number);
   }
   closeContextMenu();
 };
@@ -372,18 +394,17 @@ const selectOpenPath = async () => {
 };
 
 const doCreateDb = async () => {
-  if (!dbName.value || !dbPath.value) return;
-  await store.createDatabase(dbName.value, dbPath.value);
+  if (!dbDescription.value || !dbPath.value) return;
+  await store.createDatabase(dbDescription.value, dbPath.value);
   showCreateDb.value = false;
-  dbName.value = '';
+  dbDescription.value = '';
   dbPath.value = '';
 };
 
 const doOpenDb = async () => {
-  if (!dbName.value || !dbPath.value) return;
-  await store.openDatabase(dbName.value, dbPath.value);
+  if (!dbPath.value) return;
+  await store.openDatabase(dbPath.value);
   showOpenDb.value = false;
-  dbName.value = '';
   dbPath.value = '';
 };
 
@@ -462,7 +483,7 @@ const doAddBook = async () => {
 const buildTree = (categories: any[]) => {
   const map = new Map();
   const roots: any[] = [];
-  categories.forEach(c => map.set(c.id, { ...c, children: [] }));
+  categories.forEach(c => map.set(c.id, { ...c, children: [], isOpen: true }));
   categories.forEach(c => {
     if (c.parent_id) {
       const parent = map.get(c.parent_id);

@@ -11,6 +11,10 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             commands::create_db,
             commands::open_db,
+            commands::get_db_description,
+            commands::close_db,
+            commands::count_books_in_category,
+            commands::delete_category,
             commands::get_categories,
             commands::add_category,
             commands::get_books,
