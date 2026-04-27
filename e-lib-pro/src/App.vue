@@ -95,7 +95,7 @@
     </div>
 
     <!-- Modals -->
-    <div v-if="showConfig" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div v-if="showConfig" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
       <div class="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-96">
         <h2 class="text-xl mb-4">Configuration</h2>
         <div class="space-y-3">
@@ -120,7 +120,7 @@
     </div>
 
     <!-- DB Modals -->
-    <div v-if="showCreateDb" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div v-if="showCreateDb" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
       <div class="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-96">
         <h2 class="text-xl mb-4">Create Database</h2>
         <input v-model="dbDescription" placeholder="Database Description (e.g., My Library)" class="w-full mb-2 p-2 border rounded dark:bg-gray-700 dark:border-gray-600" />
@@ -135,7 +135,7 @@
       </div>
     </div>
 
-    <div v-if="showOpenDb" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div v-if="showOpenDb" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
       <div class="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-96">
         <h2 class="text-xl mb-4">Open Database</h2>
         <div class="flex items-center space-x-2 mb-4">
@@ -150,7 +150,7 @@
     </div>
 
     <!-- Category Modal -->
-    <div v-if="showAddCategory" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div v-if="showAddCategory" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
       <div class="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-96">
         <h2 class="text-xl mb-4">Add Category</h2>
         <p class="mb-2 text-sm text-gray-500" v-if="contextMenu.type === 'category'">Parent: {{ contextMenu.nodeName }}</p>
@@ -164,7 +164,7 @@
     </div>
 
     <!-- Add Book Modal -->
-    <div v-if="showAddBook" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div v-if="showAddBook" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
       <div class="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-[500px] max-h-screen overflow-y-auto">
         <h2 class="text-xl mb-4">{{ bookForm.id ? 'Edit Book' : 'Add New Book' }}</h2>
         <div class="space-y-3">
@@ -173,7 +173,10 @@
           <input v-model="bookForm.publisher" placeholder="Publisher" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" />
           <input v-model="bookForm.isbn" placeholder="ISBN" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" />
           <input v-model="bookForm.edition" placeholder="Edition" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" />
-          <input v-model="bookForm.local_path" placeholder="Local Path" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" />
+          <div class="flex items-center space-x-2">
+            <input v-model="bookForm.local_path" placeholder="Local Path" class="flex-1 p-2 border rounded dark:bg-gray-700 dark:border-gray-600" />
+            <button @click="selectLocalPath" class="px-3 py-2 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600">Browse</button>
+          </div>
           <textarea v-model="bookForm.notes" placeholder="Notes" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 h-20"></textarea>
           
           <div class="border border-dashed border-gray-400 p-4 text-center rounded">
@@ -197,7 +200,7 @@
     </div>
 
     <!-- Confirm Modal -->
-    <div v-if="confirmModal.show" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[200]">
+    <div v-if="confirmModal.show" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-[200]">
       <div class="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-96 transform transition-all">
         <div class="flex items-center space-x-3 mb-4 text-red-500">
           <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -589,6 +592,16 @@ const onCoverChange = (e: any) => {
       }
     };
     reader.readAsArrayBuffer(file);
+  }
+};
+
+const selectLocalPath = async () => {
+  const filePath = await open({
+    multiple: false,
+    directory: false,
+  });
+  if (filePath) {
+    bookForm.value.local_path = Array.isArray(filePath) ? filePath[0] : filePath;
   }
 };
 
