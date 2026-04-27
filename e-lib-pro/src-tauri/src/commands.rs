@@ -199,19 +199,24 @@ pub fn import_bibtex(db_name: String, category_id: Option<i32>, bibtex_content: 
             Ok(chunks) => chunks.format_verbatim(),
             _ => String::new(),
         };
-        
+
         let author = match entry.author() {
             Ok(persons) => {
                 let mut names = Vec::new();
                 for person in persons {
                     names.push(person.name);
                 }
-                names.join(", ")
+                names.join(" and ")
             },
             _ => String::new(),
         };
-        
-        conn.execute("INSERT INTO books (category_id, title, author) VALUES (?1, ?2, ?3)", params![category_id, title, author]).map_err(|e| e.to_string())?;
+
+        let publisher = entry.get("publisher").map(|c| c.format_verbatim()).unwrap_or_default();
+        let isbn = entry.get("isbn").map(|c| c.format_verbatim()).unwrap_or_default();
+        let edition = entry.get("edition").map(|c| c.format_verbatim()).unwrap_or_default();
+        let note = entry.get("note").map(|c| c.format_verbatim()).unwrap_or_default();
+
+        conn.execute("INSERT INTO books (category_id, title, author, publisher, isbn, edition, notes) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)", params![category_id, title, author, publisher, isbn, edition, note]).map_err(|e| e.to_string())?;
     }
     Ok("BibTeX imported successfully".to_string())
 }

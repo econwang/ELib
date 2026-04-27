@@ -11,6 +11,7 @@ export interface DatabaseInfo {
 export const useLibraryStore = defineStore('library', () => {
   const databases = ref<DatabaseInfo[]>([])
   const currentDb = ref<string | null>(null)
+  const currentCategoryId = ref<number | null>(null)
   const categories = ref<any[]>([])
   const books = ref<any[]>([])
   const selectedBook = ref<any>(null)
@@ -68,6 +69,7 @@ export const useLibraryStore = defineStore('library', () => {
         saveDatabases()
       }
       currentDb.value = path
+      currentCategoryId.value = null
       await fetchCategories()
       await fetchBooks(null)
     } catch (e) {
@@ -83,6 +85,7 @@ export const useLibraryStore = defineStore('library', () => {
         saveDatabases()
       }
       currentDb.value = path
+      currentCategoryId.value = null
       await fetchCategories()
       await fetchBooks(null)
     } catch (e) {
@@ -101,6 +104,7 @@ export const useLibraryStore = defineStore('library', () => {
         books.value = [];
         selectedBook.value = null;
         bookCover.value = null;
+        currentCategoryId.value = null;
         if (databases.value.length > 0) {
           await openDatabase(databases.value[0].path);
         }
@@ -142,6 +146,7 @@ export const useLibraryStore = defineStore('library', () => {
   }
 
   const fetchBooks = async (categoryId: number | null) => {
+    currentCategoryId.value = categoryId;
     if (!currentDb.value) return
     try {
       books.value = await invoke('get_books', { dbName: currentDb.value, categoryId })
@@ -164,7 +169,7 @@ export const useLibraryStore = defineStore('library', () => {
   }
 
   return {
-    databases, currentDb, categories, books, selectedBook, bookCover,
+    databases, currentDb, currentCategoryId, categories, books, selectedBook, bookCover,
     loadDatabases, openDatabase, createDatabase, closeDatabase, fetchCategories, fetchBooks, selectBook, addCategory
   }
 })

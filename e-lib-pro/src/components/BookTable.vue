@@ -15,9 +15,18 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="row in table.getRowModel().rows" :key="row.id" @click="$emit('select', row.original)" class="hover:bg-blue-50 dark:hover:bg-gray-800 cursor-pointer border-b border-gray-100 dark:border-gray-800 transition-colors">
+        <tr v-for="row in table.getRowModel().rows" :key="row.id" @click="$emit('select', row.original)" @dblclick="$emit('edit', row.original)" @contextmenu.prevent="$emit('contextmenu', { event: $event, book: row.original })" class="hover:bg-blue-50 dark:hover:bg-gray-800 cursor-pointer border-b border-gray-100 dark:border-gray-800 transition-colors">
           <td v-for="cell in row.getVisibleCells()" :key="cell.id" :style="{ width: cell.column.getSize() + 'px' }" class="p-2 truncate overflow-hidden">
-            <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+            <template v-if="cell.column.id === 'author'">
+              <div class="flex flex-wrap gap-1">
+                <span v-for="(author, i) in String(cell.getValue() || '').split(/\s+and\s+|,/).filter(a => a.trim() !== 'and' && a.trim() !== '')" :key="i" class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded-full">
+                  {{ author.trim() }}
+                </span>
+              </div>
+            </template>
+            <template v-else>
+              <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+            </template>
           </td>
         </tr>
         <tr v-if="!books || books.length === 0">
@@ -35,7 +44,7 @@ import type { ColumnDef } from '@tanstack/vue-table';
 import { invoke } from '@tauri-apps/api/core';
 
 const props = defineProps<{ books: any[] }>();
-defineEmits(['select']);
+defineEmits(['select', 'edit', 'contextmenu']);
 
 const containerRef = ref<HTMLElement | null>(null);
 const containerWidth = ref(1000);

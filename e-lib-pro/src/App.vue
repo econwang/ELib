@@ -56,7 +56,7 @@
         
         <!-- Top Right Pane (Table) -->
         <div :style="{ height: topPaneHeight + 'px' }" class="bg-white dark:bg-gray-900 overflow-auto shrink-0">
-          <BookTable :books="store.books" @select="store.selectBook" />
+          <BookTable :books="store.books" @select="store.selectBook" @edit="openEditBookModal" @contextmenu="onBookContextMenu" />
         </div>
         
         <!-- Horizontal Resizer -->
@@ -82,6 +82,9 @@
       <div v-if="contextMenu.type === 'category'" class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="handleContextMenu('addBook')">Add Book to Category</div>
       <div v-if="contextMenu.type === 'category'" class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-200 dark:border-gray-600 mb-1 pb-1" @click="handleContextMenu('addCategory')">Add Sub-category</div>
       <div v-if="contextMenu.type === 'category'" class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-red-500" @click="handleContextMenu('deleteCategory')">Delete Category</div>
+      
+      <div v-if="contextMenu.type === 'book'" class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="handleContextMenu('editBook')">Edit Book</div>
+      <div v-if="contextMenu.type === 'book'" class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-red-500" @click="handleContextMenu('deleteBook')">Delete Book</div>
     </div>
 
     <!-- Modals -->
@@ -156,7 +159,7 @@
     <!-- Add Book Modal -->
     <div v-if="showAddBook" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-[500px] max-h-screen overflow-y-auto">
-        <h2 class="text-xl mb-4">Add New Book</h2>
+        <h2 class="text-xl mb-4">{{ bookForm.id ? 'Edit Book' : 'Add New Book' }}</h2>
         <div class="space-y-3">
           <input v-model="bookForm.title" placeholder="Title" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" />
           <input v-model="bookForm.author" placeholder="Author" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" />
@@ -181,7 +184,7 @@
         
         <div class="flex justify-end space-x-2 mt-4">
           <button @click="showAddBook = false" class="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700">Cancel</button>
-          <button @click="doAddBook" class="px-4 py-2 rounded bg-[var(--color-primary)] text-white">Add</button>
+          <button @click="doAddBook" class="px-4 py-2 rounded bg-[var(--color-primary)] text-white">{{ bookForm.id ? 'Save' : 'Add' }}</button>
         </div>
       </div>
     </div>
@@ -377,6 +380,7 @@ const handleContextMenu = async (action: string) => {
     categoryName.value = '';
     showAddCategory.value = true;
   } else if (action === 'addBook') {
+    store.currentCategoryId = contextMenu.value.nodeId as number;
     openAddBookModal();
   } else if (action === 'createDb') {
     dbDescription.value = '';
@@ -387,6 +391,15 @@ const handleContextMenu = async (action: string) => {
     showOpenDb.value = true;
   } else if (action === 'closeDb') {
     await store.closeDatabase(contextMenu.value.nodeId as unknown as string);
+  } else if (action === 'editBook') {
+    const book = store.books.find(b => b.id === contextMenu.value.nodeId);
+    if (book) openEditBookModal(book);
+  } else if (action === 'deleteBook') {
+    const yes = await confirm(`Are you sure you want to delete "${contextMenu.value.nodeName}"?`, { title: 'Confirm Deletion' });
+    if (yes) {
+      await invoke('delete_book', { dbName: store.currentDb, id: contextMenu.value.nodeId as number });
+      store.fetchBooks(store.currentCategoryId);
+    }
   } else if (action === 'deleteCategory') {
     await handleDeleteCategory(contextMenu.value.nodeId as number);
   }
@@ -456,12 +469,46 @@ const exportBibtex = async () => {
 
 // Add Book Logic
 const bookForm = ref({
+  id: null as number | null,
   title: '', author: '', publisher: '', isbn: '', edition: '', local_path: '', notes: '', bibtex: '', coverBytes: [] as number[], coverName: ''
 });
 
 const openAddBookModal = () => {
-  bookForm.value = { title: '', author: '', publisher: '', isbn: '', edition: '', local_path: '', notes: '', bibtex: '', coverBytes: [], coverName: '' };
+  if (store.currentCategoryId === null) {
+    alert('Please select a specific category first to add a book.');
+    return;
+  }
+  bookForm.value = { id: null, title: '', author: '', publisher: '', isbn: '', edition: '', local_path: '', notes: '', bibtex: '', coverBytes: [], coverName: '' };
   showAddBook.value = true;
+};
+
+const openEditBookModal = (book: any) => {
+  bookForm.value = {
+    id: book.id,
+    title: book.title,
+    author: book.author,
+    publisher: book.publisher,
+    isbn: book.isbn,
+    edition: book.edition,
+    local_path: book.local_path,
+    notes: book.notes,
+    bibtex: '',
+    coverBytes: [],
+    coverName: ''
+  };
+  showAddBook.value = true;
+};
+
+const onBookContextMenu = ({ event, book }: any) => {
+  event.preventDefault();
+  contextMenu.value = {
+    show: true,
+    x: event.clientX,
+    y: event.clientY,
+    type: 'book',
+    nodeId: book.id,
+    nodeName: book.title
+  };
 };
 
 const onCoverChange = (e: any) => {
@@ -481,31 +528,49 @@ const onCoverChange = (e: any) => {
 
 const doAddBook = async () => {
   if (!store.currentDb) return;
-  const targetCategory = contextMenu.value.nodeId; // Add to selected category from context menu or root
+  const targetCategory = bookForm.value.id ? null : store.currentCategoryId; // Keep existing category if editing
   
-  if (bookForm.value.bibtex.trim() !== '') {
-    await invoke('import_bibtex', { 
-      dbName: store.currentDb, 
-      categoryId: targetCategory, 
-      bibtexContent: bookForm.value.bibtex 
-    });
-  } else {
-    await invoke('add_book', {
-      dbName: store.currentDb,
-      categoryId: targetCategory,
-      title: bookForm.value.title,
-      author: bookForm.value.author,
-      publisher: bookForm.value.publisher,
-      isbn: bookForm.value.isbn,
-      edition: bookForm.value.edition,
-      localPath: bookForm.value.local_path,
-      coverBytes: bookForm.value.coverBytes,
-      notes: bookForm.value.notes
-    });
+  try {
+    if (bookForm.value.id) {
+      await invoke('update_book', {
+        dbName: store.currentDb,
+        id: bookForm.value.id,
+        title: bookForm.value.title,
+        author: bookForm.value.author,
+        publisher: bookForm.value.publisher,
+        isbn: bookForm.value.isbn,
+        edition: bookForm.value.edition,
+        localPath: bookForm.value.local_path,
+        notes: bookForm.value.notes
+      });
+    } else {
+      if (bookForm.value.bibtex.trim() !== '') {
+        await invoke('import_bibtex', { 
+          dbName: store.currentDb, 
+          categoryId: targetCategory, 
+          bibtexContent: bookForm.value.bibtex 
+        });
+      } else {
+        await invoke('add_book', {
+          dbName: store.currentDb,
+          categoryId: targetCategory,
+          title: bookForm.value.title,
+          author: bookForm.value.author,
+          publisher: bookForm.value.publisher,
+          isbn: bookForm.value.isbn,
+          edition: bookForm.value.edition,
+          localPath: bookForm.value.local_path,
+          coverBytes: bookForm.value.coverBytes,
+          notes: bookForm.value.notes
+        });
+      }
+    }
+    
+    showAddBook.value = false;
+    store.fetchBooks(store.currentCategoryId);
+  } catch (e) {
+    console.error(e);
   }
-  
-  showAddBook.value = false;
-  store.fetchBooks(targetCategory);
 };
 </script>
 

@@ -20,3 +20,8 @@ image = "0.24"
 biblatex = "0.9.3"
 lazy_static = "1.4"
 base64 = "0.21"
+
+[[bin]]
+name = "test_bib"
+path = "src/bin/test_bib.rs"
+
