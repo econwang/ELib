@@ -24,7 +24,9 @@
           <td v-for="cell in row.getVisibleCells()" :key="cell.id" class="p-2 truncate overflow-hidden">
             <template v-if="cell.column.id === 'author'">
               <div class="flex flex-wrap gap-1">
-                <span v-for="(author, i) in String(cell.getValue() || '').split(';').filter(a => a.trim() !== '')" :key="i" class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded-full">
+                <span v-for="(author, i) in String(cell.getValue() || '').split(';').filter(a => a.trim() !== '')" :key="i" 
+                      class="px-2 py-0.5 text-xs rounded-full transition-colors"
+                      :class="[selectedId === row.original.id ? 'bg-blue-200 dark:bg-blue-800 text-blue-900 dark:text-blue-100' : 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200']">
                   {{ 
                     (() => {
                       const name = author.trim();
