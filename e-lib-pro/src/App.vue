@@ -198,7 +198,7 @@ import TreeView from './components/TreeView.vue';
 import BookTable from './components/BookTable.vue';
 import BookDetail from './components/BookDetail.vue';
 import { invoke } from '@tauri-apps/api/core';
-import { save, open, confirm } from '@tauri-apps/plugin-dialog';
+import { save, open } from '@tauri-apps/plugin-dialog';
 
 const store = useLibraryStore();
 
@@ -366,7 +366,7 @@ const handleDeleteCategory = async (categoryId: number) => {
   try {
     const count = await invoke('count_books_in_category', { dbName: store.currentDb, categoryId }) as number;
     if (count > 0) {
-      const yes = await confirm(`This category and its sub-categories contain ${count} books. Are you sure you want to delete them all?`, { title: 'Confirm Deletion' });
+      const yes = window.confirm(`This category and its sub-categories contain ${count} books. Are you sure you want to delete them all?`);
       if (!yes) return;
     }
     await invoke('delete_category', { dbName: store.currentDb, categoryId });
@@ -401,7 +401,7 @@ const handleContextMenu = async (action: string) => {
       if (book) openEditBookModal(book);
     } else if (currentAction === 'deleteBook') {
       try {
-        const yes = await confirm(`Are you sure you want to delete "${menuData.nodeName}"?`, { title: 'Confirm Deletion' });
+        const yes = window.confirm(`Are you sure you want to delete "${menuData.nodeName}"?`);
         if (yes) {
           await invoke('delete_book', { dbName: store.currentDb, id: Number(menuData.nodeId) });
           await store.fetchBooks(store.currentCategoryId);
