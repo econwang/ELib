@@ -400,10 +400,14 @@ const handleContextMenu = async (action: string) => {
       const book = store.books.find(b => b.id === menuData.nodeId);
       if (book) openEditBookModal(book);
     } else if (currentAction === 'deleteBook') {
-      const yes = await confirm(`Are you sure you want to delete "${menuData.nodeName}"?`, { title: 'Confirm Deletion' });
-      if (yes) {
-        await invoke('delete_book', { dbName: store.currentDb, id: menuData.nodeId as number });
-        store.fetchBooks(store.currentCategoryId);
+      try {
+        const yes = await confirm(`Are you sure you want to delete "${menuData.nodeName}"?`, { title: 'Confirm Deletion' });
+        if (yes) {
+          await invoke('delete_book', { dbName: store.currentDb, id: Number(menuData.nodeId) });
+          await store.fetchBooks(store.currentCategoryId);
+        }
+      } catch (err) {
+        alert('Failed to delete book: ' + JSON.stringify(err));
       }
     } else if (currentAction === 'deleteCategory') {
       await handleDeleteCategory(menuData.nodeId as number);
