@@ -25,7 +25,33 @@ export const useLibraryStore = defineStore('library', () => {
         await openDatabase(databases.value[0].path)
       }
     } else {
-      await createDatabase('Default Library', 'default.db')
+      // First launch: Clear any legacy state just in case, then create a clean default library
+      localStorage.removeItem('elib_dbs');
+      databases.value = [];
+      await createDatabase('Default Library', 'default.db');
+      
+      // Add a sample category and a sample book
+      if (currentDb.value) {
+        try {
+          const categoryId = await invoke('add_category', { dbName: currentDb.value, parentId: null, name: 'Getting Started', level: 1 }) as number;
+          await invoke('add_book', {
+            dbName: currentDb.value,
+            categoryId: categoryId,
+            title: 'Welcome to eLibPro',
+            author: 'Trae Agent',
+            publisher: 'eLib Foundation',
+            isbn: '978-3-16-148410-0',
+            edition: '1st',
+            localPath: '',
+            coverBytes: [],
+            notes: 'This is a sample book to help you get started with eLibPro. You can right-click on categories to add more books, or right-click on the database to add new categories!'
+          });
+          await fetchCategories();
+          await fetchBooks(null);
+        } catch (e) {
+          console.error('Failed to add sample data:', e);
+        }
+      }
     }
   }
 
