@@ -8,6 +8,8 @@ use std::fs;
 use std::path::Path;
 use base64::{Engine as _, engine::general_purpose::STANDARD};
 
+use image::GenericImageView;
+
 #[derive(Serialize, Deserialize)]
 pub struct Category {
     id: i32,
@@ -146,9 +148,21 @@ pub fn get_book_cover(db_name: String, book_id: i32) -> Result<Option<String>, S
 pub fn add_book(db_name: String, category_id: Option<i32>, title: String, author: String, publisher: String, isbn: String, edition: String, local_path: String, cover_bytes: Vec<u8>, notes: String) -> Result<String, String> {
     let compressed_bytes = if !cover_bytes.is_empty() {
         let img = image::load_from_memory(&cover_bytes).map_err(|e| e.to_string())?;
-        let resized = img.resize_to_fill(800, 800, image::imageops::FilterType::Lanczos3);
+        
+        // Calculate new dimensions maintaining aspect ratio (max 800px on either side)
+        let (width, height) = img.dimensions();
+        let scale = f32::min(800.0 / width as f32, 800.0 / height as f32);
+        
+        let resized = if scale < 1.0 {
+            let new_width = (width as f32 * scale) as u32;
+            let new_height = (height as f32 * scale) as u32;
+            img.resize_exact(new_width, new_height, image::imageops::FilterType::Lanczos3)
+        } else {
+            img // If image is smaller than 800x800, keep original size
+        };
+        
         let mut cb = Vec::new();
-        resized.write_to(&mut Cursor::new(&mut cb), ImageOutputFormat::Jpeg(80)).map_err(|e| e.to_string())?;
+        resized.write_to(&mut Cursor::new(&mut cb), ImageOutputFormat::Jpeg(85)).map_err(|e| e.to_string())?;
         Some(cb)
     } else {
         None
@@ -173,9 +187,20 @@ pub fn update_book(db_name: String, id: i32, title: String, author: String, publ
 
     if !cover_bytes.is_empty() {
         let img = image::load_from_memory(&cover_bytes).map_err(|e| e.to_string())?;
-        let resized = img.resize_to_fill(800, 800, image::imageops::FilterType::Lanczos3);
+        
+        let (width, height) = img.dimensions();
+        let scale = f32::min(800.0 / width as f32, 800.0 / height as f32);
+        
+        let resized = if scale < 1.0 {
+            let new_width = (width as f32 * scale) as u32;
+            let new_height = (height as f32 * scale) as u32;
+            img.resize_exact(new_width, new_height, image::imageops::FilterType::Lanczos3)
+        } else {
+            img
+        };
+
         let mut cb = Vec::new();
-        resized.write_to(&mut std::io::Cursor::new(&mut cb), image::ImageOutputFormat::Jpeg(80)).map_err(|e| e.to_string())?;
+        resized.write_to(&mut std::io::Cursor::new(&mut cb), image::ImageOutputFormat::Jpeg(85)).map_err(|e| e.to_string())?;
 
         conn.execute(
             "UPDATE books SET title=?1, author=?2, publisher=?3, isbn=?4, edition=?5, local_path=?6, cover_image=?7, notes=?8 WHERE id=?9",
