@@ -23,7 +23,8 @@
         <p class="text-sm text-gray-600 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-gray-100">Edition:</span> {{ book.edition || 'N/A' }}</p>
         <p class="text-sm text-gray-600 dark:text-gray-300 col-span-2 truncate" :title="book.local_path">
           <span class="font-semibold text-gray-900 dark:text-gray-100">Local Path:</span> 
-          <a href="#" @click.prevent="openLocalPath" class="text-blue-500 hover:underline cursor-pointer">{{ book.local_path || 'Not set' }}</a>
+          <a v-if="book.local_path" href="#" @click.prevent="openLocalPath" class="text-blue-500 hover:underline cursor-pointer">{{ book.local_path }}</a>
+          <span v-else>Not set</span>
         </p>
       </div>
       <div class="mt-4 flex flex-col">

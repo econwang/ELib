@@ -53,6 +53,12 @@ html, body {
   font-size: 1em !important;
   line-height: 1.6 !important;
 }
+.custom-prose > *:first-child {
+  margin-top: 0 !important;
+}
+.custom-prose > *:last-child {
+  margin-bottom: 0 !important;
+}
 .custom-prose h1 {
   font-size: 1.6em !important;
   margin-top: 1em !important;
