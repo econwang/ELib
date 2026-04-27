@@ -21,7 +21,10 @@
         <p class="text-sm text-gray-600 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-gray-100">Publisher:</span> {{ book.publisher || 'Unknown' }}</p>
         <p class="text-sm text-gray-600 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-gray-100">ISBN:</span> {{ book.isbn || 'N/A' }}</p>
         <p class="text-sm text-gray-600 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-gray-100">Edition:</span> {{ book.edition || 'N/A' }}</p>
-        <p class="text-sm text-gray-600 dark:text-gray-300 col-span-2 truncate" :title="book.local_path"><span class="font-semibold text-gray-900 dark:text-gray-100">Local Path:</span> <a href="#" class="text-blue-500 hover:underline">{{ book.local_path || 'Not set' }}</a></p>
+        <p class="text-sm text-gray-600 dark:text-gray-300 col-span-2 truncate" :title="book.local_path">
+          <span class="font-semibold text-gray-900 dark:text-gray-100">Local Path:</span> 
+          <a href="#" @click.prevent="openLocalPath" class="text-blue-500 hover:underline cursor-pointer">{{ book.local_path || 'Not set' }}</a>
+        </p>
       </div>
       <div class="mt-4 flex flex-col h-full">
         <h3 class="font-semibold text-sm mb-1">Personal Notes</h3>
@@ -35,5 +38,18 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{ book: any, cover: string | null }>();
+import { open } from '@tauri-apps/plugin-shell';
+
+const props = defineProps<{ book: any, cover: string | null }>();
+
+const openLocalPath = async () => {
+  if (props.book?.local_path) {
+    try {
+      await open(props.book.local_path);
+    } catch (error) {
+      console.error('Failed to open file:', error);
+      alert('Failed to open file: ' + error);
+    }
+  }
+};
 </script>
