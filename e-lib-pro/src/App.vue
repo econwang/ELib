@@ -188,6 +188,23 @@
         </div>
       </div>
     </div>
+
+    <!-- Confirm Modal -->
+    <div v-if="confirmModal.show" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[200]">
+      <div class="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-96 transform transition-all">
+        <div class="flex items-center space-x-3 mb-4 text-red-500">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">{{ confirmModal.title }}</h2>
+        </div>
+        <p class="mb-6 text-gray-700 dark:text-gray-300">{{ confirmModal.message }}</p>
+        <div class="flex justify-end space-x-3">
+          <button @click="confirmModal.resolve(false); confirmModal.show = false" class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors">Cancel</button>
+          <button @click="confirmModal.resolve(true); confirmModal.show = false" class="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white font-medium transition-colors">Delete</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -248,6 +265,24 @@ const contextMenu = ref({
   nodeId: null as number | null,
   nodeName: ''
 });
+
+const confirmModal = ref({
+  show: false,
+  title: '',
+  message: '',
+  resolve: (v: boolean) => { v; }
+});
+
+const customConfirm = (message: string, title: string = 'Confirm Action'): Promise<boolean> => {
+  return new Promise((resolve) => {
+    confirmModal.value = {
+      show: true,
+      title,
+      message,
+      resolve
+    };
+  });
+};
 
 const customStyle = computed(() => {
   return {
@@ -366,7 +401,7 @@ const handleDeleteCategory = async (categoryId: number) => {
   try {
     const count = await invoke('count_books_in_category', { dbName: store.currentDb, categoryId }) as number;
     if (count > 0) {
-      const yes = window.confirm(`This category and its sub-categories contain ${count} books. Are you sure you want to delete them all?`);
+      const yes = await customConfirm(`This category and its sub-categories contain ${count} books. Are you sure you want to delete them all?`, 'Confirm Deletion');
       if (!yes) return;
     }
     await invoke('delete_category', { dbName: store.currentDb, categoryId });
@@ -401,7 +436,7 @@ const handleContextMenu = async (action: string) => {
       if (book) openEditBookModal(book);
     } else if (currentAction === 'deleteBook') {
       try {
-        const yes = window.confirm(`Are you sure you want to delete "${menuData.nodeName}"?`);
+        const yes = await customConfirm(`Are you sure you want to delete "${menuData.nodeName}"?`, 'Confirm Deletion');
         if (yes) {
           await invoke('delete_book', { dbName: store.currentDb, id: Number(menuData.nodeId) });
           await store.fetchBooks(store.currentCategoryId);
