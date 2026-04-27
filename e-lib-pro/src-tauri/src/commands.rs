@@ -167,13 +167,27 @@ pub fn add_book(db_name: String, category_id: Option<i32>, title: String, author
 }
 
 #[command]
-pub fn update_book(db_name: String, id: i32, title: String, author: String, publisher: String, isbn: String, edition: String, local_path: String, notes: String) -> Result<String, String> {
+pub fn update_book(db_name: String, id: i32, title: String, author: String, publisher: String, isbn: String, edition: String, local_path: String, cover_bytes: Vec<u8>, notes: String) -> Result<String, String> {
     let pool = DB_POOL.lock().unwrap();
     let conn = pool.get(&db_name).ok_or("Database not found")?;
-    conn.execute(
-        "UPDATE books SET title=?1, author=?2, publisher=?3, isbn=?4, edition=?5, local_path=?6, notes=?7 WHERE id=?8",
-        params![title, author, publisher, isbn, edition, local_path, notes, id],
-    ).map_err(|e| e.to_string())?;
+
+    if !cover_bytes.is_empty() {
+        let img = image::load_from_memory(&cover_bytes).map_err(|e| e.to_string())?;
+        let resized = img.resize_to_fill(800, 800, image::imageops::FilterType::Lanczos3);
+        let mut cb = Vec::new();
+        resized.write_to(&mut std::io::Cursor::new(&mut cb), image::ImageOutputFormat::Jpeg(80)).map_err(|e| e.to_string())?;
+
+        conn.execute(
+            "UPDATE books SET title=?1, author=?2, publisher=?3, isbn=?4, edition=?5, local_path=?6, cover_image=?7, notes=?8 WHERE id=?9",
+            params![title, author, publisher, isbn, edition, local_path, cb, notes, id],
+        ).map_err(|e| e.to_string())?;
+    } else {
+        conn.execute(
+            "UPDATE books SET title=?1, author=?2, publisher=?3, isbn=?4, edition=?5, local_path=?6, notes=?7 WHERE id=?8",
+            params![title, author, publisher, isbn, edition, local_path, notes, id],
+        ).map_err(|e| e.to_string())?;
+    }
+
     Ok("Book updated".to_string())
 }
 

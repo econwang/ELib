@@ -607,6 +607,7 @@ const doAddBook = async () => {
         isbn: bookForm.value.isbn,
         edition: bookForm.value.edition,
         localPath: bookForm.value.local_path,
+        coverBytes: bookForm.value.coverBytes,
         notes: bookForm.value.notes
       });
     } else {
@@ -633,7 +634,15 @@ const doAddBook = async () => {
     }
     
     showAddBook.value = false;
-    store.fetchBooks(store.currentCategoryId);
+    await store.fetchBooks(store.currentCategoryId);
+    
+    // Refresh the selected book's cover if it was the one being edited
+    if (bookForm.value.id === store.selectedBook?.id) {
+      const updatedBook = store.books.find(b => b.id === bookForm.value.id);
+      if (updatedBook) {
+        store.selectBook(updatedBook);
+      }
+    }
   } catch (e) {
     console.error(e);
   }
