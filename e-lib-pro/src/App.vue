@@ -42,7 +42,7 @@
               <span class="truncate">{{ db.description }}</span>
             </div>
             <div v-show="store.currentDb === db.id" class="mt-1">
-              <TreeView :nodes="buildTree(store.categories)" @select="onCategorySelect" @contextmenu="onCategoryContextMenu" />
+              <TreeView :nodes="categoryTree" @select="onCategorySelect" @toggle="onCategoryToggle" @contextmenu="onCategoryContextMenu" />
             </div>
           </div>
         </div>
@@ -278,8 +278,35 @@ const saveConfig = async () => {
   showConfig.value = false;
 };
 
+const expandedCategoryIds = ref<number[]>([]);
+
+const onCategoryToggle = (node: any) => {
+  const index = expandedCategoryIds.value.indexOf(node.id);
+  if (index === -1) {
+    expandedCategoryIds.value.push(node.id);
+  } else {
+    expandedCategoryIds.value.splice(index, 1);
+  }
+};
+
+const categoryTree = computed(() => {
+  const map = new Map();
+  const roots: any[] = [];
+  store.categories.forEach(c => map.set(c.id, { ...c, children: [], isOpen: expandedCategoryIds.value.includes(c.id) }));
+  store.categories.forEach(c => {
+    if (c.parent_id) {
+      const parent = map.get(c.parent_id);
+      if (parent) parent.children.push(map.get(c.id));
+    } else {
+      roots.push(map.get(c.id));
+    }
+  });
+  return roots;
+});
+
 const selectDb = (db: any) => {
   store.currentDb = db.id;
+  expandedCategoryIds.value = [];
   store.fetchCategories();
   store.fetchBooks(null);
 };
@@ -479,21 +506,6 @@ const doAddBook = async () => {
   
   showAddBook.value = false;
   store.fetchBooks(targetCategory);
-};
-
-const buildTree = (categories: any[]) => {
-  const map = new Map();
-  const roots: any[] = [];
-  categories.forEach(c => map.set(c.id, { ...c, children: [], isOpen: false }));
-  categories.forEach(c => {
-    if (c.parent_id) {
-      const parent = map.get(c.parent_id);
-      if (parent) parent.children.push(map.get(c.id));
-    } else {
-      roots.push(map.get(c.id));
-    }
-  });
-  return roots;
 };
 </script>
 

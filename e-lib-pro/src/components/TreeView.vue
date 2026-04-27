@@ -25,6 +25,7 @@
         <TreeView v-if="node.children && node.children.length" 
                   :nodes="node.children" 
                   @select="$emit('select', $event)" 
+                  @toggle="$emit('toggle', $event)"
                   @contextmenu="$emit('contextmenu', $event)" />
       </div>
     </li>
@@ -33,10 +34,10 @@
 
 <script setup lang="ts">
 defineProps<{ nodes: any[] }>();
-const emit = defineEmits(['select', 'contextmenu']);
+const emit = defineEmits(['select', 'contextmenu', 'toggle']);
 
 const toggleNode = (node: any) => {
-  node.isOpen = !node.isOpen;
+  emit('toggle', node);
   emit('select', node);
 };
 </script>
