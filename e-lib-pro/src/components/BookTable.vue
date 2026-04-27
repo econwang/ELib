@@ -1,6 +1,6 @@
 <template>
-  <div class="h-full w-full overflow-auto">
-    <table class="w-full text-left border-collapse whitespace-nowrap" :style="{ width: table.getTotalSize() + 'px' }">
+  <div class="h-full w-full overflow-auto flex flex-col" ref="containerRef">
+    <table class="w-full text-left border-collapse whitespace-nowrap table-fixed">
       <thead class="bg-gray-100 dark:bg-gray-800 sticky top-0 shadow-sm z-10">
         <tr v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
           <th v-for="header in headerGroup.headers" :key="header.id" :style="{ width: header.getSize() + 'px' }" class="p-2 border-b border-gray-300 dark:border-gray-700 font-semibold text-sm relative group">
@@ -29,25 +29,110 @@
 </template>
 
 <script setup lang="ts">
-// removed unused import
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { useVueTable, getCoreRowModel, FlexRender } from '@tanstack/vue-table';
 import type { ColumnDef } from '@tanstack/vue-table';
+import { invoke } from '@tauri-apps/api/core';
 
 const props = defineProps<{ books: any[] }>();
 defineEmits(['select']);
 
-const columns: ColumnDef<any>[] = [
-  { accessorKey: 'title', header: 'Title', size: 300 },
-  { accessorKey: 'author', header: 'Author', size: 200 },
-  { accessorKey: 'publisher', header: 'Publisher', size: 150 },
-  { accessorKey: 'isbn', header: 'ISBN', size: 150 },
+const containerRef = ref<HTMLElement | null>(null);
+const containerWidth = ref(1000);
+
+const resizeObserver = new ResizeObserver((entries) => {
+  for (let entry of entries) {
+    if (entry.contentRect.width > 0) {
+      containerWidth.value = entry.contentRect.width;
+      updateColumnSizes();
+    }
+  }
+});
+
+onMounted(() => {
+  if (containerRef.value) {
+    resizeObserver.observe(containerRef.value);
+    containerWidth.value = containerRef.value.clientWidth;
+  }
+  loadConfig();
+});
+
+onUnmounted(() => {
+  resizeObserver.disconnect();
+});
+
+const defaultRatios = {
+  title: 0.4,
+  author: 0.3,
+  publisher: 0.2,
+  edition: 0.1
+};
+
+const columnSizes = ref({ ...defaultRatios });
+
+const updateColumnSizes = () => {
+  const w = containerWidth.value;
+  columns.value[0].size = Math.max(100, w * columnSizes.value.title);
+  columns.value[1].size = Math.max(80, w * columnSizes.value.author);
+  columns.value[2].size = Math.max(80, w * columnSizes.value.publisher);
+  columns.value[3].size = Math.max(60, w * columnSizes.value.edition);
+};
+
+const columns = ref<ColumnDef<any>[]>([
+  { accessorKey: 'title', header: 'Title', size: 400 },
+  { accessorKey: 'author', header: 'Author', size: 300 },
+  { accessorKey: 'publisher', header: 'Publisher', size: 200 },
   { accessorKey: 'edition', header: 'Edition', size: 100 },
-];
+]);
 
 const table = useVueTable({
   get data() { return props.books || [] },
-  columns,
+  get columns() { return columns.value },
   getCoreRowModel: getCoreRowModel(),
   columnResizeMode: 'onChange',
 });
+
+const loadConfig = async () => {
+  try {
+    const confStr = await invoke('read_config');
+    const conf = JSON.parse(confStr as string);
+    if (conf.columnSizes) {
+      columnSizes.value = { ...defaultRatios, ...conf.columnSizes };
+    }
+    updateColumnSizes();
+  } catch (e) {}
+};
+
+const saveConfig = async () => {
+  try {
+    const confStr = await invoke('read_config');
+    const conf = JSON.parse(confStr as string);
+    conf.columnSizes = columnSizes.value;
+    await invoke('save_config', { config: JSON.stringify(conf) });
+  } catch (e) {}
+};
+
+let resizeTimeout: any;
+watch(
+  () => table.getState().columnSizing,
+  (newSizing) => {
+    if (Object.keys(newSizing).length === 0) return;
+    
+    // Convert absolute pixel sizes back to ratios
+    const w = containerWidth.value;
+    if (w > 0) {
+      if (newSizing.title) columnSizes.value.title = newSizing.title / w;
+      if (newSizing.author) columnSizes.value.author = newSizing.author / w;
+      if (newSizing.publisher) columnSizes.value.publisher = newSizing.publisher / w;
+      if (newSizing.edition) columnSizes.value.edition = newSizing.edition / w;
+      
+      // Debounce saving config
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        saveConfig();
+      }, 500);
+    }
+  },
+  { deep: true }
+);
 </script>

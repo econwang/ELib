@@ -5,9 +5,9 @@
       <div class="relative group">
         <div class="cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-700 px-2 py-1 rounded">File</div>
         <div class="absolute hidden group-hover:block top-full left-0 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-lg py-1 z-50 w-48">
-          <div class="px-4 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="dbDescription=''; dbPath=''; showCreateDb=true">Create New Database</div>
-          <div class="px-4 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="dbPath=''; showOpenDb=true">Open Existing Database</div>
-          <div class="px-4 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="exportBibtex">Export BibTeX</div>
+          <div class="px-4 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="dbDescription=''; dbPath=''; showCreateDb=true">Create Database</div>
+          <div class="px-4 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="dbPath=''; showOpenDb=true">Open Database</div>
+          <div class="px-4 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="exportBibtex">Export Bibtex</div>
         </div>
       </div>
       <div class="relative group">
@@ -484,7 +484,7 @@ const doAddBook = async () => {
 const buildTree = (categories: any[]) => {
   const map = new Map();
   const roots: any[] = [];
-  categories.forEach(c => map.set(c.id, { ...c, children: [], isOpen: true }));
+  categories.forEach(c => map.set(c.id, { ...c, children: [], isOpen: false }));
   categories.forEach(c => {
     if (c.parent_id) {
       const parent = map.get(c.parent_id);
