@@ -9,6 +9,7 @@ use std::path::Path;
 use base64::{Engine as _, engine::general_purpose::STANDARD};
 
 use image::GenericImageView;
+use tauri_plugin_shell::ShellExt;
 
 #[derive(Serialize, Deserialize)]
 pub struct Category {
@@ -373,4 +374,9 @@ pub fn delete_category(db_name: String, category_id: i32) -> Result<String, Stri
     conn.execute(sql_cats, params![category_id]).map_err(|e| e.to_string())?;
 
     Ok("Category deleted".to_string())
+}
+
+#[command]
+pub fn open_local_file(app: tauri::AppHandle, path: String) -> Result<(), String> {
+    app.shell().open(path, None).map_err(|e| e.to_string())
 }

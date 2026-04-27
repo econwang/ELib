@@ -38,14 +38,14 @@
 </template>
 
 <script setup lang="ts">
-import { open } from '@tauri-apps/plugin-shell';
+import { invoke } from '@tauri-apps/api/core';
 
 const props = defineProps<{ book: any, cover: string | null }>();
 
 const openLocalPath = async () => {
   if (props.book?.local_path) {
     try {
-      await open(props.book.local_path);
+      await invoke('open_local_file', { path: props.book.local_path });
     } catch (error) {
       console.error('Failed to open file:', error);
       alert('Failed to open file: ' + error);
