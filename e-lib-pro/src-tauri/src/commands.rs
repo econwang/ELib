@@ -226,7 +226,7 @@ pub fn delete_book(db_name: String, id: i32) -> Result<String, String> {
 }
 
 #[command]
-pub fn import_bibtex(db_name: String, category_id: Option<i32>, bibtex_content: String, local_path: String, cover_bytes: Vec<u8>, form_notes: String) -> Result<String, String> {
+pub fn import_bibtex(db_name: String, category_id: Option<i32>, bibtex_content: String, local_path: String, cover_bytes: Vec<u8>, form_notes: String, form_title: String, form_author: String, form_publisher: String, form_isbn: String, form_edition: String) -> Result<String, String> {
     let bibliography = biblatex::Bibliography::parse(&bibtex_content)
         .map_err(|e| format!("{:?}", e))?;
     
@@ -252,28 +252,30 @@ pub fn import_bibtex(db_name: String, category_id: Option<i32>, bibtex_content: 
     let conn = pool.get(&db_name).ok_or("Database not found")?;
 
     for entry in bibliography.iter() {
-        let title = entry.get_as::<String>("title").unwrap_or_default();
-        let author = match entry.author() {
-            Ok(persons) => {
-                let mut names = Vec::new();
-                for person in persons {
-                    let first = person.given_name;
-                    let last = person.name;
-                    let mut full = String::new();
-                    if !first.is_empty() {
-                        full.push_str(&first);
-                        full.push(' ');
+        let title = if !form_title.is_empty() { form_title.clone() } else { entry.get_as::<String>("title").unwrap_or_default() };
+        let author = if !form_author.is_empty() { form_author.clone() } else {
+            match entry.author() {
+                Ok(persons) => {
+                    let mut names = Vec::new();
+                    for person in persons {
+                        let first = person.given_name;
+                        let last = person.name;
+                        let mut full = String::new();
+                        if !first.is_empty() {
+                            full.push_str(&first);
+                            full.push(' ');
+                        }
+                        full.push_str(&last);
+                        names.push(full.trim().to_string());
                     }
-                    full.push_str(&last);
-                    names.push(full.trim().to_string());
-                }
-                names.join(";")
-            },
-            _ => String::new(),
+                    names.join("; ")
+                },
+                _ => String::new(),
+            }
         };
-        let publisher = entry.get_as::<String>("publisher").unwrap_or_default();
-        let isbn = entry.get_as::<String>("isbn").unwrap_or_default();
-        let edition = entry.get_as::<String>("edition").unwrap_or_default();
+        let publisher = if !form_publisher.is_empty() { form_publisher.clone() } else { entry.get_as::<String>("publisher").unwrap_or_default() };
+        let isbn = if !form_isbn.is_empty() { form_isbn.clone() } else { entry.get_as::<String>("isbn").unwrap_or_default() };
+        let edition = if !form_edition.is_empty() { form_edition.clone() } else { entry.get_as::<String>("edition").unwrap_or_default() };
         let bib_note = entry.get_as::<String>("note").unwrap_or_default();
         
         let mut combined_notes = form_notes.clone();

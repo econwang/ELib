@@ -659,7 +659,12 @@ const doAddBook = async () => {
           bibtexContent: bookForm.value.bibtex,
           localPath: bookForm.value.local_path,
           coverBytes: bookForm.value.coverBytes,
-          formNotes: bookForm.value.notes
+          formNotes: bookForm.value.notes,
+          formTitle: bookForm.value.title,
+          formAuthor: bookForm.value.author,
+          formPublisher: bookForm.value.publisher,
+          formIsbn: bookForm.value.isbn,
+          formEdition: bookForm.value.edition
         });
       } else {
         await invoke('add_book', {
