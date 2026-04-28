@@ -6,6 +6,7 @@
 @theme {
   --color-app-bg: var(--config-bg);
   --color-app-surface: var(--config-surface);
+  --color-app-panel: var(--config-panel);
   --color-app-text: var(--config-text);
   --color-app-text-muted: var(--config-text-muted);
   --color-app-border: var(--config-border);

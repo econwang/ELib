@@ -1,7 +1,7 @@
 <template>
   <div class="h-screen w-screen flex flex-col bg-app-bg text-app-text transition-colors duration-200" :style="customStyle">
     <!-- Menu Bar -->
-    <header class="h-8 bg-app-surface flex items-center px-4 space-x-4 font-menu select-none border-b border-app-border shrink-0">
+    <header class="h-8 bg-app-panel flex items-center px-4 space-x-4 font-menu select-none border-b border-app-border shrink-0">
       <div class="relative group">
         <div class="cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-700 px-2 py-1 rounded">File</div>
         <div class="absolute hidden group-hover:block top-full left-0 bg-app-surface border border-app-border shadow-lg py-1 z-50 w-48">
@@ -30,7 +30,7 @@
     <div class="flex-1 flex overflow-hidden" @click="closeContextMenu" @mousemove="onDrag" @mouseup="stopDrag" @mouseleave="stopDrag">
       
       <!-- Left Pane (TreeView) -->
-      <div :style="{ width: leftPaneWidth + 'px' }" class="bg-app-surface overflow-y-auto shrink-0 font-ui">
+      <div :style="{ width: leftPaneWidth + 'px' }" class="bg-app-panel overflow-y-auto shrink-0 font-ui">
         <div class="p-2 h-full" @contextmenu.prevent="onPaneContextMenu">
           <div v-for="db in store.databases" :key="db.id" class="mb-2 select-none">
             <div class="flex items-center space-x-2 font-bold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 p-1.5 rounded transition-colors" 
@@ -56,9 +56,9 @@
       <div class="flex-1 flex flex-col min-w-0">
         
         <!-- Top Right Pane (Table) -->
-        <div :style="{ height: topPaneHeight + 'px' }" class="bg-app-bg overflow-auto shrink-0 relative">
+        <div :style="{ height: topPaneHeight + 'px' }" class="bg-app-surface overflow-auto shrink-0 relative">
           <BookTable v-if="store.currentCategoryId !== null" :books="store.books" :selectedId="store.selectedBook?.id" @select="store.selectBook" @edit="openEditBookModal" @contextmenu="onBookContextMenu" @contextmenu-empty="onTableContextMenu" />
-          <div v-else class="absolute inset-0 flex items-center justify-center text-app-text-muted bg-app-bg z-20">
+          <div v-else class="absolute inset-0 flex items-center justify-center text-app-text-muted bg-app-surface z-20">
             Select a category to view books
           </div>
         </div>
@@ -67,10 +67,10 @@
         <div class="h-1 cursor-row-resize hover:bg-[var(--color-primary)] bg-gray-300 dark:bg-gray-700 z-10 transition-colors" @mousedown="startDrag('horizontal')"></div>
 
         <!-- Bottom Right Pane (Details) -->
-        <div v-if="store.selectedBook" class="flex-1 bg-gray-50 dark:bg-gray-800 overflow-y-auto p-4 min-h-0">
+        <div v-if="store.selectedBook" class="flex-1 bg-app-bg overflow-y-auto p-4 min-h-0">
           <BookDetail :book="store.selectedBook" :cover="store.bookCover" />
         </div>
-        <div v-else class="flex-1 bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-app-text-muted min-h-0">
+        <div v-else class="flex-1 bg-app-bg flex items-center justify-center text-app-text-muted min-h-0">
           Select a book to view details
         </div>
       </div>
@@ -121,6 +121,7 @@
               <div class="space-y-2">
                 <h4 class="text-sm font-medium text-app-text-muted">Light Mode</h4>
                 <label class="flex justify-between items-center text-sm"><span>Background</span> <input type="color" v-model="config.bgLight" @change="applyConfig"></label>
+                <label class="flex justify-between items-center text-sm"><span>Panel</span> <input type="color" v-model="config.panelLight" @change="applyConfig"></label>
                 <label class="flex justify-between items-center text-sm"><span>Surface</span> <input type="color" v-model="config.surfaceLight" @change="applyConfig"></label>
                 <label class="flex justify-between items-center text-sm"><span>Text</span> <input type="color" v-model="config.textLight" @change="applyConfig"></label>
                 <label class="flex justify-between items-center text-sm"><span>Muted Text</span> <input type="color" v-model="config.textMutedLight" @change="applyConfig"></label>
@@ -129,6 +130,7 @@
               <div class="space-y-2">
                 <h4 class="text-sm font-medium text-app-text-muted">Dark Mode</h4>
                 <label class="flex justify-between items-center text-sm"><span>Background</span> <input type="color" v-model="config.bgDark" @change="applyConfig"></label>
+                <label class="flex justify-between items-center text-sm"><span>Panel</span> <input type="color" v-model="config.panelDark" @change="applyConfig"></label>
                 <label class="flex justify-between items-center text-sm"><span>Surface</span> <input type="color" v-model="config.surfaceDark" @change="applyConfig"></label>
                 <label class="flex justify-between items-center text-sm"><span>Text</span> <input type="color" v-model="config.textDark" @change="applyConfig"></label>
                 <label class="flex justify-between items-center text-sm"><span>Muted Text</span> <input type="color" v-model="config.textMutedDark" @change="applyConfig"></label>
@@ -358,14 +360,16 @@ const config = ref({
   darkMode: false,
   primaryColor: '#3b82f6',
   bgLight: '#f9fafb',
+  panelLight: '#f3f4f6',
   bgDark: '#111827',
+  panelDark: '#1f2937',
   surfaceLight: '#ffffff',
   surfaceDark: '#1f2937',
   textLight: '#111827',
   textDark: '#f3f4f6',
-  textMutedLight: '#6b7280',
+  textMutedLight: '#4b5563',
   textMutedDark: '#9ca3af',
-  borderLight: '#d1d5db',
+  borderLight: '#e5e7eb',
   borderDark: '#374151',
   bookFontSize: 16,
   menuFontFamily: 'sans-serif',
@@ -427,6 +431,7 @@ const customStyle = computed(() => {
   return {
     '--color-primary': config.value.primaryColor,
     '--config-bg': config.value.darkMode ? config.value.bgDark : config.value.bgLight,
+    '--config-panel': config.value.darkMode ? config.value.panelDark : config.value.panelLight,
     '--config-surface': config.value.darkMode ? config.value.surfaceDark : config.value.surfaceLight,
     '--config-text': config.value.darkMode ? config.value.textDark : config.value.textLight,
     '--config-text-muted': config.value.darkMode ? config.value.textMutedDark : config.value.textMutedLight,
@@ -449,6 +454,8 @@ onMounted(async () => {
     if (conf.primaryColor !== undefined) config.value.primaryColor = conf.primaryColor;
     if (conf.bgLight !== undefined) config.value.bgLight = conf.bgLight;
     if (conf.bgDark !== undefined) config.value.bgDark = conf.bgDark;
+    if (conf.panelLight !== undefined) config.value.panelLight = conf.panelLight;
+    if (conf.panelDark !== undefined) config.value.panelDark = conf.panelDark;
     if (conf.surfaceLight !== undefined) config.value.surfaceLight = conf.surfaceLight;
     if (conf.surfaceDark !== undefined) config.value.surfaceDark = conf.surfaceDark;
     if (conf.textLight !== undefined) config.value.textLight = conf.textLight;

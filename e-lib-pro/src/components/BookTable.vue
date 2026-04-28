@@ -1,7 +1,7 @@
 <template>
   <div class="h-full w-full overflow-auto flex flex-col bg-app-bg" ref="containerRef" @click="$emit('select', null)" @contextmenu.prevent="$emit('contextmenu-empty', $event)">
     <table class="w-full text-left border-collapse whitespace-nowrap table-fixed">
-      <thead class="bg-app-surface sticky top-0 shadow-sm z-10">
+      <thead class="bg-app-panel sticky top-0 shadow-sm z-10">
         <tr v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
           <th v-for="header in headerGroup.headers" :key="header.id" :style="{ width: header.getSize() + 'px' }" class="p-2 border-b border-app-border font-semibold font-ui relative group select-none">
             <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header" :props="header.getContext()" />
