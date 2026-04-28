@@ -1,10 +1,10 @@
 <template>
-  <div class="h-screen w-screen flex flex-col bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-200" :style="customStyle">
+  <div class="h-screen w-screen flex flex-col bg-app-bg text-app-text transition-colors duration-200" :style="customStyle">
     <!-- Menu Bar -->
-    <header class="h-8 bg-gray-200 dark:bg-gray-800 flex items-center px-4 space-x-4 font-menu select-none border-b border-gray-300 dark:border-gray-700 shrink-0">
+    <header class="h-8 bg-app-surface flex items-center px-4 space-x-4 font-menu select-none border-b border-app-border shrink-0">
       <div class="relative group">
         <div class="cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-700 px-2 py-1 rounded">File</div>
-        <div class="absolute hidden group-hover:block top-full left-0 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-lg py-1 z-50 w-48">
+        <div class="absolute hidden group-hover:block top-full left-0 bg-app-surface border border-app-border shadow-lg py-1 z-50 w-48">
           <div class="px-4 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="dbDescription=''; dbPath=''; showCreateDb=true">Create Database</div>
           <div class="px-4 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="dbPath=''; showOpenDb=true">Open Database</div>
           <div class="px-4 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="exportBibtex">Export Bibtex</div>
@@ -12,14 +12,14 @@
       </div>
       <div class="relative group">
         <div class="cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-700 px-2 py-1 rounded">Edit</div>
-        <div class="absolute hidden group-hover:block top-full left-0 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-lg py-1 z-50 w-48">
+        <div class="absolute hidden group-hover:block top-full left-0 bg-app-surface border border-app-border shadow-lg py-1 z-50 w-48">
           <div class="px-4 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="openAddBookModal">Add New Book</div>
           <div class="px-4 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="showAddCategory = true">Add Category</div>
         </div>
       </div>
       <div class="relative group">
         <div class="cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-700 px-2 py-1 rounded">View</div>
-        <div class="absolute hidden group-hover:block top-full left-0 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-lg py-1 z-50 w-48">
+        <div class="absolute hidden group-hover:block top-full left-0 bg-app-surface border border-app-border shadow-lg py-1 z-50 w-48">
           <div class="px-4 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="toggleTheme">Toggle Light/Dark Theme</div>
           <div class="px-4 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="showConfig = true">GUI Config Editor</div>
         </div>
@@ -30,7 +30,7 @@
     <div class="flex-1 flex overflow-hidden" @click="closeContextMenu" @mousemove="onDrag" @mouseup="stopDrag" @mouseleave="stopDrag">
       
       <!-- Left Pane (TreeView) -->
-      <div :style="{ width: leftPaneWidth + 'px' }" class="bg-gray-100 dark:bg-gray-800 overflow-y-auto shrink-0 font-ui">
+      <div :style="{ width: leftPaneWidth + 'px' }" class="bg-app-surface overflow-y-auto shrink-0 font-ui">
         <div class="p-2 h-full" @contextmenu.prevent="onPaneContextMenu">
           <div v-for="db in store.databases" :key="db.id" class="mb-2 select-none">
             <div class="flex items-center space-x-2 font-bold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 p-1.5 rounded transition-colors" 
@@ -56,9 +56,9 @@
       <div class="flex-1 flex flex-col min-w-0">
         
         <!-- Top Right Pane (Table) -->
-        <div :style="{ height: topPaneHeight + 'px' }" class="bg-white dark:bg-gray-900 overflow-auto shrink-0 relative">
+        <div :style="{ height: topPaneHeight + 'px' }" class="bg-app-bg overflow-auto shrink-0 relative">
           <BookTable v-if="store.currentCategoryId !== null" :books="store.books" :selectedId="store.selectedBook?.id" @select="store.selectBook" @edit="openEditBookModal" @contextmenu="onBookContextMenu" @contextmenu-empty="onTableContextMenu" />
-          <div v-else class="absolute inset-0 flex items-center justify-center text-gray-500 bg-white dark:bg-gray-900 z-20">
+          <div v-else class="absolute inset-0 flex items-center justify-center text-app-text-muted bg-app-bg z-20">
             Select a category to view books
           </div>
         </div>
@@ -70,7 +70,7 @@
         <div v-if="store.selectedBook" class="flex-1 bg-gray-50 dark:bg-gray-800 overflow-y-auto p-4 min-h-0">
           <BookDetail :book="store.selectedBook" :cover="store.bookCover" />
         </div>
-        <div v-else class="flex-1 bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-500 min-h-0">
+        <div v-else class="flex-1 bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-app-text-muted min-h-0">
           Select a book to view details
         </div>
       </div>
@@ -78,7 +78,7 @@
   
 
     <!-- Context Menu -->
-    <div v-if="contextMenu.show" :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }" class="fixed bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-lg py-1 z-[100] w-48 font-menu rounded shadow-xl">
+    <div v-if="contextMenu.show" :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }" class="fixed bg-app-surface border border-app-border shadow-lg py-1 z-[100] w-48 font-menu rounded shadow-xl">
       <div v-if="contextMenu.type === 'pane'" class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="handleContextMenu('createDb')">Create Database</div>
       <div v-if="contextMenu.type === 'pane'" class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="handleContextMenu('openDb')">Open Database</div>
       
@@ -97,12 +97,12 @@
 
     <!-- Modals -->
     <div v-if="showConfig" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-      <div class="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-[32rem] max-h-[90vh] overflow-y-auto">
+      <div class="bg-app-surface p-6 rounded shadow-lg w-[32rem] max-h-[90vh] overflow-y-auto">
         <h2 class="text-xl mb-4 font-bold">UI Configuration</h2>
         
         <div class="space-y-4">
           <!-- General -->
-          <div class="p-3 border rounded dark:border-gray-700">
+          <div class="p-3 border rounded border-app-border">
             <h3 class="font-semibold mb-2">Theme Color</h3>
             <div class="flex flex-wrap gap-3">
               <button 
@@ -115,11 +115,31 @@
                 :title="color.name"
               ></button>
             </div>
+            
+            <h3 class="font-semibold border-b border-app-border pb-1 mt-4">Interface Colors</h3>
+            <div class="grid grid-cols-2 gap-4 mt-2">
+              <div class="space-y-2">
+                <h4 class="text-sm font-medium text-app-text-muted">Light Mode</h4>
+                <label class="flex justify-between items-center text-sm"><span>Background</span> <input type="color" v-model="config.bgLight" @change="applyConfig"></label>
+                <label class="flex justify-between items-center text-sm"><span>Surface</span> <input type="color" v-model="config.surfaceLight" @change="applyConfig"></label>
+                <label class="flex justify-between items-center text-sm"><span>Text</span> <input type="color" v-model="config.textLight" @change="applyConfig"></label>
+                <label class="flex justify-between items-center text-sm"><span>Muted Text</span> <input type="color" v-model="config.textMutedLight" @change="applyConfig"></label>
+                <label class="flex justify-between items-center text-sm"><span>Border</span> <input type="color" v-model="config.borderLight" @change="applyConfig"></label>
+              </div>
+              <div class="space-y-2">
+                <h4 class="text-sm font-medium text-app-text-muted">Dark Mode</h4>
+                <label class="flex justify-between items-center text-sm"><span>Background</span> <input type="color" v-model="config.bgDark" @change="applyConfig"></label>
+                <label class="flex justify-between items-center text-sm"><span>Surface</span> <input type="color" v-model="config.surfaceDark" @change="applyConfig"></label>
+                <label class="flex justify-between items-center text-sm"><span>Text</span> <input type="color" v-model="config.textDark" @change="applyConfig"></label>
+                <label class="flex justify-between items-center text-sm"><span>Muted Text</span> <input type="color" v-model="config.textMutedDark" @change="applyConfig"></label>
+                <label class="flex justify-between items-center text-sm"><span>Border</span> <input type="color" v-model="config.borderDark" @change="applyConfig"></label>
+              </div>
+            </div>
           </div>
 
           <!-- Fonts -->
-          <div class="p-3 border rounded dark:border-gray-700 space-y-3">
-            <h3 class="font-semibold border-b dark:border-gray-600 pb-1">Book Info Font (Base)</h3>
+          <div class="p-3 border rounded border-app-border space-y-3">
+            <h3 class="font-semibold border-b border-app-border pb-1">Book Info Font (Base)</h3>
             <div class="flex space-x-2">
               <label class="flex flex-col space-y-1 flex-1">
                 <span class="text-sm">Family</span>
@@ -181,7 +201,7 @@
 
     <!-- DB Modals -->
     <div v-if="showCreateDb" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-      <div class="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-96">
+      <div class="bg-app-surface p-6 rounded shadow-lg w-96">
         <h2 class="text-xl mb-4">Create Database</h2>
         <input v-model="dbDescription" placeholder="Database Description (e.g., My Library)" class="w-full mb-2 p-2 border rounded dark:bg-gray-700 dark:border-gray-600" />
         <div class="flex items-center space-x-2 mb-4">
@@ -196,7 +216,7 @@
     </div>
 
     <div v-if="showOpenDb" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-      <div class="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-96">
+      <div class="bg-app-surface p-6 rounded shadow-lg w-96">
         <h2 class="text-xl mb-4">Open Database</h2>
         <div class="flex items-center space-x-2 mb-4">
           <input v-model="dbPath" placeholder="Select .db file..." readonly class="flex-1 p-2 border rounded dark:bg-gray-700 dark:border-gray-600 bg-gray-100 dark:bg-gray-900 cursor-not-allowed" />
@@ -211,10 +231,10 @@
 
     <!-- Category Modal -->
     <div v-if="showAddCategory" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-      <div class="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-96">
+      <div class="bg-app-surface p-6 rounded shadow-lg w-96">
         <h2 class="text-xl mb-4">Add Category</h2>
-        <p class="mb-2 text-sm text-gray-500" v-if="contextMenu.type === 'category'">Parent: {{ contextMenu.nodeName }}</p>
-        <p class="mb-2 text-sm text-gray-500" v-else>Parent: Root</p>
+        <p class="mb-2 text-sm text-app-text-muted" v-if="contextMenu.type === 'category'">Parent: {{ contextMenu.nodeName }}</p>
+        <p class="mb-2 text-sm text-app-text-muted" v-else>Parent: Root</p>
         <input v-model="categoryName" @keyup.enter="doAddCategory" placeholder="Category Name" class="w-full mb-4 p-2 border rounded dark:bg-gray-700 dark:border-gray-600" />
         <div class="flex justify-end space-x-2">
           <button @click="showAddCategory = false" class="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700">Cancel</button>
@@ -225,7 +245,7 @@
 
     <!-- Add Book Modal -->
     <div v-if="showAddBook" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-      <div class="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-[500px] max-h-screen overflow-y-auto">
+      <div class="bg-app-surface p-6 rounded shadow-lg w-[500px] max-h-screen overflow-y-auto">
         <h2 class="text-xl mb-4">{{ bookForm.id ? 'Edit Book' : 'Add New Book' }}</h2>
         <div class="space-y-3">
           <input v-model="bookForm.title" placeholder="Title" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" />
@@ -247,7 +267,7 @@
               </label>
             </div>
             <div class="flex items-center space-x-2">
-              <span class="text-gray-500 text-sm font-semibold">OR</span>
+              <span class="text-app-text-muted text-sm font-semibold">OR</span>
               <input v-model="bookForm.coverUrl" placeholder="Paste Image URL here..." class="flex-1 p-1.5 border rounded text-sm dark:bg-gray-700 dark:border-gray-600" />
               <button @click="fetchCoverUrl" type="button" class="px-3 py-1.5 bg-gray-200 dark:bg-gray-700 rounded text-sm hover:bg-gray-300 dark:hover:bg-gray-600" :disabled="isFetchingCover">
                 {{ isFetchingCover ? 'Fetching...' : 'Fetch' }}
@@ -270,14 +290,14 @@
 
     <!-- Confirm Modal -->
     <div v-if="confirmModal.show" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-[200]">
-      <div class="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-96 transform transition-all">
+      <div class="bg-app-surface p-6 rounded shadow-lg w-96 transform transition-all">
         <div class="flex items-center space-x-3 mb-4 text-red-500">
           <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
-          <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">{{ confirmModal.title }}</h2>
+          <h2 class="text-xl font-bold text-app-text">{{ confirmModal.title }}</h2>
         </div>
-        <p class="mb-6 text-gray-700 dark:text-gray-300">{{ confirmModal.message }}</p>
+        <p class="mb-6 text-app-text-muted">{{ confirmModal.message }}</p>
         <div class="flex justify-end space-x-3">
           <button @click="confirmModal.resolve(false); confirmModal.show = false" class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors">Cancel</button>
           <button @click="confirmModal.resolve(true); confirmModal.show = false" class="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white font-medium transition-colors">Delete</button>
@@ -337,6 +357,16 @@ const showConfig = ref(false);
 const config = ref({
   darkMode: false,
   primaryColor: '#3b82f6',
+  bgLight: '#f9fafb',
+  bgDark: '#111827',
+  surfaceLight: '#ffffff',
+  surfaceDark: '#1f2937',
+  textLight: '#111827',
+  textDark: '#f3f4f6',
+  textMutedLight: '#6b7280',
+  textMutedDark: '#9ca3af',
+  borderLight: '#d1d5db',
+  borderDark: '#374151',
   bookFontSize: 16,
   menuFontFamily: 'sans-serif',
   menuFontSize: 1.0,
@@ -396,6 +426,11 @@ const customConfirm = (message: string, title: string = 'Confirm Action'): Promi
 const customStyle = computed(() => {
   return {
     '--color-primary': config.value.primaryColor,
+    '--config-bg': config.value.darkMode ? config.value.bgDark : config.value.bgLight,
+    '--config-surface': config.value.darkMode ? config.value.surfaceDark : config.value.surfaceLight,
+    '--config-text': config.value.darkMode ? config.value.textDark : config.value.textLight,
+    '--config-text-muted': config.value.darkMode ? config.value.textMutedDark : config.value.textMutedLight,
+    '--config-border': config.value.darkMode ? config.value.borderDark : config.value.borderLight,
     '--font-book-size': config.value.bookFontSize + 'px',
     '--font-menu-family': config.value.menuFontFamily,
     '--font-menu-size': config.value.menuFontSize + 'em',
@@ -412,6 +447,16 @@ onMounted(async () => {
     const conf = JSON.parse(confStr as string);
     if (conf.darkMode !== undefined) config.value.darkMode = conf.darkMode;
     if (conf.primaryColor !== undefined) config.value.primaryColor = conf.primaryColor;
+    if (conf.bgLight !== undefined) config.value.bgLight = conf.bgLight;
+    if (conf.bgDark !== undefined) config.value.bgDark = conf.bgDark;
+    if (conf.surfaceLight !== undefined) config.value.surfaceLight = conf.surfaceLight;
+    if (conf.surfaceDark !== undefined) config.value.surfaceDark = conf.surfaceDark;
+    if (conf.textLight !== undefined) config.value.textLight = conf.textLight;
+    if (conf.textDark !== undefined) config.value.textDark = conf.textDark;
+    if (conf.textMutedLight !== undefined) config.value.textMutedLight = conf.textMutedLight;
+    if (conf.textMutedDark !== undefined) config.value.textMutedDark = conf.textMutedDark;
+    if (conf.borderLight !== undefined) config.value.borderLight = conf.borderLight;
+    if (conf.borderDark !== undefined) config.value.borderDark = conf.borderDark;
     if (conf.bookFontSize !== undefined) config.value.bookFontSize = conf.bookFontSize;
     else if (conf.fontSize !== undefined) config.value.bookFontSize = conf.fontSize; // migrate old
     if (conf.menuFontFamily !== undefined) config.value.menuFontFamily = conf.menuFontFamily;

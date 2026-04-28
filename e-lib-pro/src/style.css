@@ -3,6 +3,14 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@theme {
+  --color-app-bg: var(--config-bg);
+  --color-app-surface: var(--config-surface);
+  --color-app-text: var(--config-text);
+  --color-app-text-muted: var(--config-text-muted);
+  --color-app-border: var(--config-border);
+}
+
 html, body {
   margin: 0;
   padding: 0;

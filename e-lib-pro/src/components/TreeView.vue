@@ -13,7 +13,7 @@
            @contextmenu.stop.prevent="$emit('contextmenu', { event: $event, node })">
         
         <svg v-if="node.children && node.children.length" 
-             class="w-3 h-3 text-gray-500 transition-transform" 
+             class="w-3 h-3 text-app-text-muted transition-transform" 
              :class="{ 'rotate-90': node.isOpen }"
              fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />

@@ -1,9 +1,9 @@
 <template>
-  <div class="h-full w-full overflow-auto flex flex-col bg-white dark:bg-gray-900" ref="containerRef" @click="$emit('select', null)" @contextmenu.prevent="$emit('contextmenu-empty', $event)">
+  <div class="h-full w-full overflow-auto flex flex-col bg-app-bg" ref="containerRef" @click="$emit('select', null)" @contextmenu.prevent="$emit('contextmenu-empty', $event)">
     <table class="w-full text-left border-collapse whitespace-nowrap table-fixed">
-      <thead class="bg-gray-100 dark:bg-gray-800 sticky top-0 shadow-sm z-10">
+      <thead class="bg-app-surface sticky top-0 shadow-sm z-10">
         <tr v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
-          <th v-for="header in headerGroup.headers" :key="header.id" :style="{ width: header.getSize() + 'px' }" class="p-2 border-b border-gray-300 dark:border-gray-700 font-semibold font-ui relative group select-none">
+          <th v-for="header in headerGroup.headers" :key="header.id" :style="{ width: header.getSize() + 'px' }" class="p-2 border-b border-app-border font-semibold font-ui relative group select-none">
             <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header" :props="header.getContext()" />
             <div
               @mousedown.stop="header.getResizeHandler()($event)"
@@ -19,7 +19,7 @@
             @click.stop="$emit('select', row.original)" 
             @dblclick.stop="$emit('edit', row.original)" 
             @contextmenu.prevent.stop="$emit('contextmenu', { event: $event, book: row.original })" 
-            class="cursor-pointer border-b border-gray-100 dark:border-gray-800 transition-colors"
+            class="cursor-pointer border-b border-app-border transition-colors"
             :class="[selectedId === row.original.id ? 'bg-blue-100 dark:bg-blue-900' : 'hover:bg-blue-50 dark:hover:bg-gray-800']">
           <td v-for="cell in row.getVisibleCells()" :key="cell.id" class="p-2 truncate overflow-hidden font-book">
             <template v-if="cell.column.id === 'author'">
@@ -49,7 +49,7 @@
           </td>
         </tr>
         <tr v-if="!books || books.length === 0">
-          <td :colspan="columns.length" class="p-8 text-center text-gray-500">No books found.</td>
+          <td :colspan="columns.length" class="p-8 text-center text-app-text-muted">No books found.</td>
         </tr>
       </tbody>
     </table>
