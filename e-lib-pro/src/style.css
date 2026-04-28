@@ -3,15 +3,6 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-@theme {
-  --color-app-bg: var(--config-bg);
-  --color-app-surface: var(--config-surface);
-  --color-app-panel: var(--config-panel);
-  --color-app-text: var(--config-text);
-  --color-app-text-muted: var(--config-text-muted);
-  --color-app-border: var(--config-border);
-}
-
 html, body {
   margin: 0;
   padding: 0;
@@ -41,6 +32,30 @@ html, body {
 .font-book {
   font-family: var(--font-book-family) !important;
   font-size: 1em !important;
+}
+
+.bg-app-bg {
+  background-color: var(--config-bg, #f9fafb) !important;
+}
+
+.bg-app-panel {
+  background-color: var(--config-panel, #f3f4f6) !important;
+}
+
+.bg-app-surface {
+  background-color: var(--config-surface, #ffffff) !important;
+}
+
+.text-app-text {
+  color: var(--config-text, #111827) !important;
+}
+
+.text-app-text-muted {
+  color: var(--config-text-muted, #4b5563) !important;
+}
+
+.border-app-border {
+  border-color: var(--config-border, #e5e7eb) !important;
 }
 
 /* Custom Scrollbars for Light/Dark Mode */
