@@ -145,12 +145,7 @@
             <div class="flex space-x-2">
               <label class="flex flex-col space-y-1 flex-1">
                 <span class="text-sm">Family</span>
-                <select v-model="config.bookFontFamily" @change="applyConfig" class="p-1 border rounded dark:bg-gray-700 dark:border-gray-600">
-                  <option value="serif">Serif</option>
-                  <option value="sans-serif">Sans-serif</option>
-                  <option value="monospace">Monospace</option>
-                  <option value="system-ui">System UI</option>
-                </select>
+                <input v-model="config.bookFontFamily" @change="applyConfig" class="p-1 border rounded bg-app-surface border-app-border" placeholder="e.g. Times New Roman, Georgia, serif" />
               </label>
               <label class="flex flex-col space-y-1 flex-1">
                 <span class="text-sm">Size (px)</span>
@@ -162,12 +157,7 @@
             <div class="flex space-x-2">
               <label class="flex flex-col space-y-1 flex-1">
                 <span class="text-sm">Family</span>
-                <select v-model="config.menuFontFamily" @change="applyConfig" class="p-1 border rounded dark:bg-gray-700 dark:border-gray-600">
-                  <option value="sans-serif">Sans-serif</option>
-                  <option value="serif">Serif</option>
-                  <option value="monospace">Monospace</option>
-                  <option value="system-ui">System UI</option>
-                </select>
+                <input v-model="config.menuFontFamily" @change="applyConfig" class="p-1 border rounded bg-app-surface border-app-border" placeholder="e.g. system-ui, -apple-system, Segoe UI, sans-serif" />
               </label>
               <label class="flex flex-col space-y-1 flex-1">
                 <span class="text-sm">Relative Size (em)</span>
@@ -179,12 +169,7 @@
             <div class="flex space-x-2">
               <label class="flex flex-col space-y-1 flex-1">
                 <span class="text-sm">Family</span>
-                <select v-model="config.uiFontFamily" @change="applyConfig" class="p-1 border rounded dark:bg-gray-700 dark:border-gray-600">
-                  <option value="sans-serif">Sans-serif</option>
-                  <option value="serif">Serif</option>
-                  <option value="monospace">Monospace</option>
-                  <option value="system-ui">System UI</option>
-                </select>
+                <input v-model="config.uiFontFamily" @change="applyConfig" class="p-1 border rounded bg-app-surface border-app-border" placeholder="e.g. Inter, system-ui, sans-serif" />
               </label>
               <label class="flex flex-col space-y-1 flex-1">
                 <span class="text-sm">Relative Size (em)</span>
@@ -428,6 +413,9 @@ const customConfirm = (message: string, title: string = 'Confirm Action'): Promi
 };
 
 const customStyle = computed(() => {
+  const menuFontFamily = config.value.menuFontFamily?.trim() || 'sans-serif';
+  const uiFontFamily = config.value.uiFontFamily?.trim() || 'sans-serif';
+  const bookFontFamily = config.value.bookFontFamily?.trim() || 'serif';
   return {
     '--color-primary': config.value.primaryColor,
     '--config-bg': config.value.darkMode ? config.value.bgDark : config.value.bgLight,
@@ -437,11 +425,11 @@ const customStyle = computed(() => {
     '--config-text-muted': config.value.darkMode ? config.value.textMutedDark : config.value.textMutedLight,
     '--config-border': config.value.darkMode ? config.value.borderDark : config.value.borderLight,
     '--font-book-size': config.value.bookFontSize + 'px',
-    '--font-menu-family': config.value.menuFontFamily,
+    '--font-menu-family': menuFontFamily,
     '--font-menu-size': config.value.menuFontSize + 'em',
-    '--font-ui-family': config.value.uiFontFamily,
+    '--font-ui-family': uiFontFamily,
     '--font-ui-size': config.value.uiFontSize + 'em',
-    '--font-book-family': config.value.bookFontFamily,
+    '--font-book-family': bookFontFamily,
   }
 });
 
@@ -850,4 +838,3 @@ const doAddBook = async () => {
   }
 };
 </script>
-
